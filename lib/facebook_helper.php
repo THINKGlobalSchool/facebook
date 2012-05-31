@@ -15,18 +15,95 @@ function facebook_test() {
 
 	elgg_load_library('elgg:facebook_sdk');
 	
-	$appId = elgg_get_plugin_setting('app_id', 'facebook');
-	$secret = elgg_get_plugin_setting('app_secret', 'facebook');
-	
-	$facebook = new Facebook(array(
-	  'appId'  => $appId,
-	  'secret' => $secret,
-	));
-	
-	$user = $facebook->getUser();
-	
 	$params['title'] = elgg_echo('facebook:label:facebooksettings');
 	$params['content'] = $content;
 
 	return $params;
+}
+
+/**
+ * Build content for user settings
+ */
+function facebook_get_user_settings_content() {
+	// Set the context to settings
+	elgg_set_context('settings');
+
+	elgg_set_page_owner_guid(elgg_get_logged_in_user_guid());
+	$user = elgg_get_page_owner_entity();
+	
+ 	$title = elgg_echo('facebook:label:facebooksettings');
+	
+	elgg_push_breadcrumb(elgg_echo('settings'), "settings/user/$user->username");
+	elgg_push_breadcrumb($title);
+	
+	$content = elgg_view('facebook/settings', array('user' => $user));
+	
+	$params['title'] = $title;
+	$params['content'] = $content;
+
+	return $params;
+}
+
+/**
+ * Grab a facebook client
+ * 
+ * @param ElggUser $user (Optional)
+ * @return mixed
+ */
+function facebook_get_client($user = NULL) {
+	elgg_load_library('elgg:facebook_sdk');
+
+	if (!$user) {
+		$user = elgg_get_logged_in_user_entity();
+	}
+
+	$access_token = $user->facebook_access_token;
+
+	if (!$access_token) {
+		return FALSE;
+	}
+
+	$appId = elgg_get_plugin_setting('app_id', 'facebook');
+	$secret = elgg_get_plugin_setting('app_secret', 'facebook');
+
+	$facebook = new Facebook(array(
+	  'appId'  => $appId,
+	  'secret' => $secret,
+	));
+
+	$facebook->setAccessToken($access_token);
+
+	return $facebook;
+}
+
+/**
+ * Wrapper method to post to a user's status
+ * 
+ * @param string   $message
+ * @param ElggUser $user (Optional)
+ * @return bool
+ */
+function facebook_post_user_status($message, $user = NULL) {
+	$facebook = facebook_get_client($user);
+	
+	$ret_obj = $facebook->api('/me/feed', 'POST', array(
+		'message' => $message,
+	));
+	
+	// @TODO
+}
+
+// Helper function to circumvent PHP's strict handling of file_get_contents
+function curl_get_file_contents($URL) {
+	$c = curl_init();
+	curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($c, CURLOPT_URL, $URL);
+	$contents = curl_exec($c);
+	$err  = curl_getinfo($c,CURLINFO_HTTP_CODE);
+	curl_close($c);
+	if ($contents) {
+		return $contents;
+	} else {
+		return FALSE;
+	}
 }

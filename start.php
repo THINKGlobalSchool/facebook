@@ -31,6 +31,16 @@ function facebook_init() {
 	
 	// Pagesetup event handler
 	elgg_register_event_handler('pagesetup','system','facebook_pagesetup');
+	
+	// Actions
+	$action_base = elgg_get_plugins_path() . 'facebook/actions/facebook';
+	elgg_register_action("facebook/connect", "$action_base/connect.php");
+	elgg_register_action("facebook/disconnect", "$action_base/disconnect.php");
+	elgg_register_action("facebook/return", "$action_base/return.php");
+	elgg_register_action("facebook/usersettings", "$action_base/usersettings.php");
+	
+	// Register plugin hook for status updates
+	elgg_register_plugin_hook_handler('status', 'user', 'facebook_status_hook_handler');
 
 	return TRUE;
 }
@@ -43,10 +53,14 @@ function facebook_init() {
  */
 function facebook_page_handler($page) {
 	switch ($page[0]) {
+		case 'test':
+			$params = facebook_test();
+			break;
+		default;
 		case 'settings':
 		default:
 			gatekeeper();
-			$params = facebook_test();
+			$params = facebook_get_user_settings_content();
 			break;
 	}
 
@@ -76,4 +90,26 @@ function facebook_pagesetup() {
 	// Admin menu items
 	if (elgg_in_context('admin')) {
 	}
+}
+
+/**
+ * Hook into the user status update handler
+ * 
+ * @param string $hook   Name of hook
+ * @param string $type   Entity type
+ * @param mixed  $value  Return value
+ * @param array  $params Parameters
+ * @return mixed
+ */
+function facebook_status_hook_handler($hook, $type, $value, $params) {
+	if (!elgg_instanceof($params['user'], 'user')) {
+		return;
+	}
+
+	// If user has enabled automatic wire posts, then post this message to facebook
+	if (elgg_get_plugin_user_setting('auto_post_wire', $params['user'], 'facebook')) {
+		facebook_post_user_status($params['message'], $params['user']);
+	}
+
+	return TRUE;
 }
