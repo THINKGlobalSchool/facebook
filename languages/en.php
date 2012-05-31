@@ -19,8 +19,21 @@ $english = array(
 	'facebook:label:appid' => 'Facebook App ID',
 	'facebook:label:appsecret' => 'Facebook App Secret',
 	'facebook:label:facebooksettings' => 'Facebook Settings',
+	'facebook:label:connectaccount' => 'Connect account to Facebook',
+	'facebook:label:disconnectaccount' => 'Disconnect account from Facebook',
+	'facebook:label:connectinfo' => 'Manage and update your account\'s connection to Facebook',
+	'facebook:label:connectedaccountdetails' => 'Connected Account Details',
+	'facebook:label:accountname' => 'Account Name',
+	'facebook:label:accountlink' => 'Account Link',
+	'facebook:label:autopostwire' => 'Automatically submit mini-posts as status updates',
 
 	// Messages
+	'facebook:error:invalidstate' => 'Invalid State',
+	'facebook:error:disconnectingaccount' => 'There was an error disconnecting your account from Facebook',
+	
+	'facebook:success:connectedaccount' => 'Your account has been connected to Facebook!',
+	'facebook:success:disconnectedaccount' => 'Your account has been disconnected from Facebook',
+	'facebook:success:usersettings' => 'Facebook settings updated',
 
 	// River
 
