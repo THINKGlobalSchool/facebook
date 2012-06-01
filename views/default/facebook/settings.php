@@ -16,7 +16,7 @@ $content = "<div><label>$connect_info</label><br /><br /></div>";
 // Check if the user has connected their account
 if (!$vars['user']->facebook_account_connected) {
 	// Not connected, display form
-	$content = elgg_view_form('facebook/connect', $vars);
+	$content .= elgg_view_form('facebook/connect', $vars);
 } else {
 	// Connected
 	$facebook = facebook_get_client();

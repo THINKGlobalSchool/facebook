@@ -89,8 +89,77 @@ function facebook_post_user_status($message, $user = NULL) {
 	$ret_obj = $facebook->api('/me/feed', 'POST', array(
 		'message' => $message,
 	));
-	
+
 	// @TODO
+}
+
+/**
+ * Helper function to check for valid token
+ * 
+ * @param ElggUser $user
+ * @return ?
+ */
+function facebook_check_token($user = NULL) {
+	if (!elgg_instanceof($user, 'user')) {
+		$user = elgg_get_logged_in_user();
+	}
+	
+	$access_token = $user->facebook_access_token;
+	
+	// Attempt to query the fb graph
+	$graph_url = "https://graph.facebook.com/me?" . "access_token=" . $access_token;
+	
+	$response = curl_get_file_contents($graph_url);
+
+	return $response;
+}
+
+/**
+ * Helper function to exchange short lived token for a long lived token
+ * 
+ */
+function facebook_get_extended_token($token, $user = NULL) {
+	if (!elgg_instanceof($user, 'user')) {
+		$user = elgg_get_logged_in_user_entity();
+	}
+
+	// Start building token URL
+	$oauth_token_url = "https://graph.facebook.com/oauth/access_token?";
+
+	// URL Parts
+	$parts = array(
+		'client_id' => elgg_get_plugin_setting('app_id', 'facebook'),
+		'client_secret' => elgg_get_plugin_setting('app_secret', 'facebook'),
+		'grant_type' => 'fb_exchange_token',
+		'fb_exchange_token' => $token,
+	);
+
+	// Comine parts and URL
+	$oauth_token_url .= http_build_query($parts);
+	
+	// Fetch access token
+	$response = curl_get_file_contents($oauth_token_url);
+	
+	// Check for response error (will be a json string in that case)
+	$decoded_response = json_decode($response);
+	if ($decoded_response->error) {
+		$params = array(
+			'error' => $decoded_response->error->message . " ({$decoded_response->error->code})",
+		);
+	} else {
+		$params = NULL;
+		parse_str($response, $params);
+	}
+	
+	return $params;
+}
+
+/**
+ * Get the required scope string for our app
+ * @return string
+ */
+function facebook_get_scope() {
+	return 'user_status,publish_stream,user_photos,photo_upload';
 }
 
 // Helper function to circumvent PHP's strict handling of file_get_contents

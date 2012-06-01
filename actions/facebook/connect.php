@@ -25,7 +25,7 @@ $_SESSION['facebook_redirect'] = $redirect_uri;
 $parts = array(
 	'client_id' => elgg_get_plugin_setting('app_id', 'facebook'),
 	'redirect_uri' => $redirect_uri,
-	'scope' => 'user_status,publish_stream,user_photos,photo_upload',
+	'scope' => facebook_get_scope(),
 	'state' => $state,
 );
 
