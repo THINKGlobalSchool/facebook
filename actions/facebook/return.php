@@ -20,13 +20,13 @@ if ($state != $_SESSION['facebook_state']) {
 	forward();
 }
 
-// @TODO make this prettier
+// Handler error's
 if ($error = get_input('error')) {
-	echo "Error: $error<br />";
-	echo "Error Reason: " . get_input('error_reason');
-	echo "Error Description: " . get_input('error_description');
-	die;
+	error_log(get_input('error_description'));
+	register_error(elgg_echo('facebook:error:connectaccount'));
+	forward('facebook/settings');
 } else {
+	// So far so good, go ahead and start building our next request
 	$code = get_input('code');
 
 	// Start building token URL
@@ -57,7 +57,7 @@ if ($error = get_input('error')) {
 		$params = NULL;
 		parse_str($response, $params);
 		
-		$user->facebook_account_connected = TRUE;
+		$user->facebook_account_connected = TRUE;		
 		$user->facebook_access_token = $params['access_token'];
 		$user->facebook_access_token_expires = $params['expires'];
 		

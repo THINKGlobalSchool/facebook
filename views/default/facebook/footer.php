@@ -1,0 +1,42 @@
+<?php
+/**
+ * Facebook Footer @TODO better name
+ * 
+ * @package Facebook Integration
+ * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
+ * @author Jeff Tilson
+ * @copyright THINK Global School 2010 - 2012
+ * @link http://www.thinkglobalschool.com/
+ * 
+ */
+
+$show_dialog = elgg_view('output/url', array(
+	'text' => 'sadasds',
+	'href' => '#',
+	'class' => 'elgg-lightbox',
+	'id' => 'facebook-dialog-trigger',
+));
+
+
+$login_button = elgg_view('input/button', array(
+	'name' => 'facebook_login',
+	'id' => 'facebook-login-button',
+	'value' => 'Login',
+	'href' => "#",
+	'class' => 'elgg-button elgg-button-submit',
+));
+
+$action_required = elgg_echo('facebook:label:actionrequired');
+
+$content = <<<HTML
+	$show_dialog
+	<div style='display: none;'>
+		<div class='facebook-local-dialog' id='facebook-login-dialog'>
+			<h3>$action_required</h3>
+			<span class='facebook-message'></span>
+			$login_button
+		</div>
+	</div>
+HTML;
+
+echo $content;

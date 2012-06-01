@@ -29,11 +29,7 @@ $user_id = $facebook->getUser();
 
 // @TODO No user.. fix this
 if ($user_id) {
-	$result = $facebook->api(array(
-		'method' => 'auth.revokeAuthorization',
-		'uid' => $user_id,
-		'access_token' => $facebook->getAccessToken(),
-	));
+	$result = $facebook->api('/me/permissions', 'DELETE');
 
 	if ($result) {
 		$user->facebook_account_connected = FALSE;

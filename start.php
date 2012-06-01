@@ -24,7 +24,30 @@ function facebook_init() {
 	elgg_load_library('elgg:facebook_helper');
 	
 	// Register facebook SDK
-	elgg_register_library('elgg:facebook_sdk', elgg_get_plugins_path() . 'facebook/vendors/facebook-php-sdk/src/facebook.php');	 
+	elgg_register_library('elgg:facebook_sdk', elgg_get_plugins_path() . 'facebook/vendors/facebook-php-sdk/src/facebook.php');
+	
+	// Register facebook JS
+	$fb_js = elgg_get_simplecache_url('js', 'facebook/facebook');
+	elgg_register_simplecache_view('js/facebook/facebook');
+	elgg_register_js('elgg.facebook', $fb_js);
+	
+	// Register facebook CSS
+	$fb_css = elgg_get_simplecache_url('css', 'facebook/css');
+	elgg_register_simplecache_view('css/facebook/css');
+	elgg_register_css('elgg.facebook', $fb_css);
+	elgg_load_css('elgg.facebook');
+
+	// Load fb related js if user is connected
+	if (elgg_is_logged_in() && elgg_get_logged_in_user_entity()->facebook_account_connected) {
+		//elgg_load_js('elgg.facebookchannel');
+		elgg_load_js('elgg.facebook');
+	}
+
+	// JS SDK
+	elgg_extend_view('page/elements/topbar', 'facebook/js-sdk');
+	
+	// Facebook footer
+	elgg_extend_view('page/elements/footer', 'facebook/footer');
 
 	// Facebook page handler
 	elgg_register_page_handler('facebook', 'facebook_page_handler');
@@ -38,6 +61,7 @@ function facebook_init() {
 	elgg_register_action("facebook/disconnect", "$action_base/disconnect.php");
 	elgg_register_action("facebook/return", "$action_base/return.php");
 	elgg_register_action("facebook/usersettings", "$action_base/usersettings.php");
+	elgg_register_action("facebook/set_token", "$action_base/set_token.php");
 	
 	// Register plugin hook for status updates
 	elgg_register_plugin_hook_handler('status', 'user', 'facebook_status_hook_handler');
@@ -52,22 +76,32 @@ function facebook_init() {
  * @return bool
  */
 function facebook_page_handler($page) {
-	switch ($page[0]) {
-		case 'test':
-			$params = facebook_test();
-			break;
-		default;
-		case 'settings':
-		default:
-			gatekeeper();
-			$params = facebook_get_user_settings_content();
-			break;
+	// Ajax requests
+	if (elgg_is_xhr()) {
+		switch ($page[0]) {
+			case 'check':
+				echo facebook_check_token(elgg_get_logged_in_user_entity());
+				break;
+			default:
+				break;
+		}
+	} else {
+		switch ($page[0]) {
+			case 'test':
+				$params = facebook_test();
+				break;
+			default;
+			case 'settings':
+			default:
+				gatekeeper();
+				$params = facebook_get_user_settings_content();
+				break;
+		}
+
+		$body = elgg_view_layout('one_sidebar', $params);
+
+		echo elgg_view_page($params['title'], $body);
 	}
-
-	$body = elgg_view_layout('one_sidebar', $params);
-
-	echo elgg_view_page($params['title'], $body);
-
 	return TRUE;  
 }
 
@@ -107,7 +141,7 @@ function facebook_status_hook_handler($hook, $type, $value, $params) {
 	}
 
 	// If user has enabled automatic wire posts, then post this message to facebook
-	if (elgg_get_plugin_user_setting('auto_post_wire', $params['user'], 'facebook')) {
+	if (elgg_get_plugin_user_setting('auto_post_wire', $params['user']->guid, 'facebook')) {
 		facebook_post_user_status($params['message'], $params['user']);
 	}
 

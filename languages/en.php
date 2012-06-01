@@ -26,14 +26,20 @@ $english = array(
 	'facebook:label:accountname' => 'Account Name',
 	'facebook:label:accountlink' => 'Account Link',
 	'facebook:label:autopostwire' => 'Automatically submit mini-posts as status updates',
+	'facebook:label:actionrequired' => 'Action Required',
 
 	// Messages
 	'facebook:error:invalidstate' => 'Invalid State',
 	'facebook:error:disconnectingaccount' => 'There was an error disconnecting your account from Facebook',
+	'facebook:error:connectaccount' => 'There was an error connecting your account to Facebook.',
+	'facebook:error:set_token' => 'There was an error updating Facebook access: Invalid user or access token',
 	
 	'facebook:success:connectedaccount' => 'Your account has been connected to Facebook!',
 	'facebook:success:disconnectedaccount' => 'Your account has been disconnected from Facebook',
 	'facebook:success:usersettings' => 'Facebook settings updated',
+	'facebook:success:set_token' => 'Updated Facebook Access!',
+	
+	'facebook:error:accesstoken' => 'The access token associated with your connected Facebook account has expired. Please click login below to update your access',
 
 	// River
 
