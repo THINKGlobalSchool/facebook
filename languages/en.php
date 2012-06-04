@@ -34,6 +34,9 @@ $english = array(
 	'facebook:label:actionrequired' => 'Action Required',
 	'facebook:label:login' => 'Login',
 	'facebook:label:settings' => 'Settings',
+	'facebook:label:postphoto' => 'Post to Facebook',
+	'facebook:label:confirmpost' => 'Post this image to Facebook?',
+	'facebook:label:post' => 'Post',
 
 	// Messages
 	'facebook:error:invalidstate' => 'Invalid State',
@@ -45,11 +48,14 @@ $english = array(
 	'facebook:error:checktoken' => 'Could not reach facebook token check endpoint',
 	'facebook:error:usermismatch' => 'The facebook account you logged in with is not the same account you connected to Spot. Disconnect the existing account first, or try logging in again.',
 	'facebook:error:statuspost' => 'There was an error posting to Facebook: %s',
+	'facebook:error:invalidphoto' => 'Invalid Photo',
+	'facebook:error:photoupload' => 'There was an error posting your photo to Facebook: %s',
 	
 	'facebook:success:connectedaccount' => 'Your account has been connected to Facebook!',
 	'facebook:success:disconnectedaccount' => 'Your account has been disconnected from Facebook',
 	'facebook:success:usersettings' => 'Facebook settings updated',
 	'facebook:success:set_token' => 'Updated Facebook Access!',
+	'facebook:success:photoupload' => 'Photo posted to Facebook!',
 	
 	'facebook:error:accesstoken' => 'The access token associated with your connected Facebook account has expired. Please click login below to update your access.',
 
