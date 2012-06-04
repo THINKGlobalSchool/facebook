@@ -84,13 +84,18 @@ function facebook_get_client($user = NULL) {
  * @return bool
  */
 function facebook_post_user_status($message, $user = NULL) {
-	$facebook = facebook_get_client($user);
-	
-	$ret_obj = $facebook->api('/me/feed', 'POST', array(
-		'message' => $message,
-	));
+	try {
+		$facebook = facebook_get_client($user);
 
-	// @TODO
+		$ret_obj = $facebook->api('/me/feed', 'POST', array(
+			'message' => $message,
+		));
+
+		return TRUE;
+	} catch (Exception $e) {
+		register_error(elgg_echo('facebook:error:statuspost', array($e->getMessage())));
+		return FALSE;
+	}
 }
 
 /**
@@ -134,7 +139,7 @@ function facebook_get_extended_token($token, $user = NULL) {
 		'fb_exchange_token' => $token,
 	);
 
-	// Comine parts and URL
+	// Combine parts and URL
 	$oauth_token_url .= http_build_query($parts);
 	
 	// Fetch access token

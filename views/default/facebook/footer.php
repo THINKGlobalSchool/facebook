@@ -1,6 +1,6 @@
 <?php
 /**
- * Facebook Footer @TODO better name
+ * Facebook Footer
  * 
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
@@ -20,10 +20,17 @@ $show_dialog = elgg_view('output/url', array(
 
 $login_button = elgg_view('input/button', array(
 	'name' => 'facebook_login',
-	'id' => 'facebook-login-button',
-	'value' => 'Login',
+	'value' => elgg_echo('facebook:label:login'),
 	'href' => "#",
-	'class' => 'elgg-button elgg-button-submit',
+	'class' => 'elgg-button elgg-button-submit facebook-button facebook-login-button',
+));
+
+$settings_button = elgg_view('output/url', array(
+	'name' => 'facebook_settings',
+	'id' => 'facebook-settings-button',
+	'text' => elgg_echo('facebook:label:settings'),
+	'href' => elgg_get_site_url() . 'facebook/settings?cfb=0',
+	'class' => 'elgg-button elgg-button-submit facebook-button',
 ));
 
 $action_required = elgg_echo('facebook:label:actionrequired');
@@ -34,7 +41,7 @@ $content = <<<HTML
 		<div class='facebook-local-dialog' id='facebook-login-dialog'>
 			<h3>$action_required</h3>
 			<span class='facebook-message'></span>
-			$login_button
+			<span class='facebook-buttons'>$login_button $settings_button</span>
 		</div>
 	</div>
 HTML;

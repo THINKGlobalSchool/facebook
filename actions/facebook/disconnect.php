@@ -27,19 +27,18 @@ $facebook->setAccessToken($user->facebook_access_token);
 
 $user_id = $facebook->getUser(); 
 
-// @TODO No user.. fix this
 if ($user_id) {
 	$result = $facebook->api('/me/permissions', 'DELETE');
 
-	if ($result) {
-		$user->facebook_account_connected = FALSE;
-		$user->facebook_access_token = NULL;
-		$user->facebook_access_token_expires = NULL;
-		
+	if ($result) {		
 		system_message(elgg_echo('facebook:success:disconnectedaccount'));
 	} else {
 		register_error(elgg_echo('facebook:error:disconnectingaccount'));
 	}
 }
+
+$user->facebook_account_connected = FALSE;
+$user->facebook_access_token = NULL;
+$user->facebook_access_token_expires = NULL;
 
 forward(REFERER);

@@ -25,9 +25,8 @@ span.facebook-message {
 	color: #555555;
 }
 
-#facebook-login-button {
+.facebook-buttons {
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
-	width: 100px;
 }

@@ -14,9 +14,9 @@ $state = get_input('state');
 
 $user = elgg_get_logged_in_user_entity();
 
-// @TODO check state
+// Check state
 if ($state != $_SESSION['facebook_state']) {
-	elgg_register_error('facebook:error:invalidstate');
+	register_error(elgg_echo('facebook:error:invalidstate'));
 	forward();
 }
 
@@ -24,7 +24,7 @@ if ($state != $_SESSION['facebook_state']) {
 if ($error = get_input('error')) {
 	error_log(get_input('error_description'));
 	register_error(elgg_echo('facebook:error:connectaccount'));
-	forward('facebook/settings');
+	forward('facebook/settings?cfb=0');
 } else {
 	// So far so good, go ahead and start building our next request
 	$code = get_input('code');
@@ -61,10 +61,14 @@ if ($error = get_input('error')) {
 		$user->facebook_access_token = $params['access_token'];
 		$user->facebook_access_token_expires = $params['expires'];
 		
-		$facebook = facebook_get_client();
-	 	$user->facebook_account_id = $facebook->getUser();
-		
-		system_message(elgg_echo('facebook:success:connectedaccount'));
+		try {
+			$facebook = facebook_get_client();
+		 	$user->facebook_account_id = $facebook->getUser();
+			system_message(elgg_echo('facebook:success:connectedaccount'));
+		} catch (FacebookApiException $e) {
+			register_error(elgg_echo('facebook:error:accounterror'));
+		}
+
 	}	
-	forward(elgg_get_site_url() . 'facebook/settings');
+	forward(elgg_get_site_url() . 'facebook/settings?cfb=0');
 }
