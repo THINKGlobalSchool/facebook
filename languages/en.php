@@ -30,6 +30,7 @@ $english = array(
 	'facebook:label:accountname' => 'Account Name',
 	'facebook:label:accountlink' => 'Account Link',
 	'facebook:label:autopostwire' => 'Automatically submit mini-posts as status updates',
+	'facebook:label:postwall' => 'Post to your Facebook wall?',
 	'facebook:label:actionrequired' => 'Action Required',
 	'facebook:label:login' => 'Login',
 	'facebook:label:settings' => 'Settings',
