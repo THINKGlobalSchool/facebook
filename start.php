@@ -42,6 +42,10 @@ function facebook_init() {
 	if (elgg_is_logged_in() && elgg_get_logged_in_user_entity()->facebook_account_connected) {
 		//elgg_load_js('elgg.facebookchannel');
 		elgg_load_js('elgg.facebook');
+
+		// Extend tidypics image menu
+		elgg_extend_view('tidypics/image_menu', 'facebook/image_menu');
+		
 	}
 
 	// JS SDK
@@ -69,6 +73,7 @@ function facebook_init() {
 	elgg_register_action("facebook/return", "$action_base/return.php");
 	elgg_register_action("facebook/usersettings", "$action_base/usersettings.php");
 	elgg_register_action("facebook/set_token", "$action_base/set_token.php");
+	elgg_register_action("facebook/uploadphoto", "$action_base/uploadphoto.php");
 	
 	// Register plugin hook for status updates
 	elgg_register_plugin_hook_handler('status', 'user', 'facebook_status_hook_handler');

@@ -22,6 +22,9 @@ elgg.facebook.permission_scope = "<?php echo facebook_get_scope(); ?>";
 elgg.facebook.init = function() {
 	// Delegate click handler for login button
 	$(document).delegate('.facebook-login-button', 'click', elgg.facebook.loginClick);
+	
+	// Delegate click handler for facebook photo publish
+	$('#post-facebook-submit').live('click', elgg.facebook.postPhoto);
 }
 
 // FB Init 
@@ -106,6 +109,35 @@ elgg.facebook.getQueryVariableFromString = function(string, variable) {
     } 
   } 
 }
+
+/**	
+ * Post a photo to facebook
+ */ 
+elgg.facebook.postPhoto = function(event) {
+	var _this = $(this);
+	var container = _this.closest('.facebook-post-container');
+	var photo_guid = container.find('.post-photo-guid').val();
+	
+	container.addClass('elgg-ajax-loader');
+	container.html("<span>&nbsp;</span>");
+	
+	elgg.action('facebook/uploadphoto', {
+		data: {
+			photo_guid: photo_guid
+		},
+		success: function(data) {
+			if (data.status == -1) {
+				container.removeClass('elgg-ajax-loader');
+				container.html('error: ' + data.system_messages.error);
+			} else {
+				container.removeClass('elgg-ajax-loader');
+				container.html('<center><label>Success!</label></center>');
+			}
+		}
+	});
+	event.preventDefault();
+}
+
 	
 elgg.register_hook_handler('init', 'system', elgg.facebook.init);
 elgg.register_hook_handler('ready', 'facebook', elgg.facebook.fb_init);
