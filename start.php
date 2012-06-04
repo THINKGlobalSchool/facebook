@@ -19,6 +19,7 @@ elgg_register_event_handler('init','system','facebook_init');
 
 // Init function
 function facebook_init() {
+
 	// Register/Load helper library
 	elgg_register_library('elgg:facebook_helper', elgg_get_plugins_path() . 'facebook/lib/facebook_helper.php');
 	elgg_load_library('elgg:facebook_helper');
@@ -65,6 +66,9 @@ function facebook_init() {
 	
 	// Register plugin hook for status updates
 	elgg_register_plugin_hook_handler('status', 'user', 'facebook_status_hook_handler');
+
+	// Admin menu items
+	elgg_register_admin_menu_item('administer', 'account_connections', 'facebook');
 
 	return TRUE;
 }
@@ -115,14 +119,9 @@ function facebook_pagesetup() {
 		$params = array(
 			'name' => 'facebook_settings',
 			'text' => elgg_echo('facebook:label:facebooksettings'),
-			'href' => "facebook/settings",
+			'href' => "facebook/settings?cfb=0",
 		);
 		elgg_register_menu_item('page', $params);
-	}
-	
-	
-	// Admin menu items
-	if (elgg_in_context('admin')) {
 	}
 }
 
