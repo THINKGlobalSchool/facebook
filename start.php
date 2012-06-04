@@ -49,12 +49,18 @@ function facebook_init() {
 	
 	// Facebook footer
 	elgg_extend_view('page/elements/footer', 'facebook/footer');
+	
+	// Wire extender
+	elgg_extend_view('forms/thewire/add', 'facebook/wirepost');
 
 	// Facebook page handler
 	elgg_register_page_handler('facebook', 'facebook_page_handler');
 	
 	// Pagesetup event handler
 	elgg_register_event_handler('pagesetup','system','facebook_pagesetup');
+	
+	// Hook into object create event
+	elgg_register_event_handler('create', 'object', 'facebook_wire_post_handler');
 	
 	// Actions
 	$action_base = elgg_get_plugins_path() . 'facebook/actions/facebook';
@@ -144,5 +150,25 @@ function facebook_status_hook_handler($hook, $type, $value, $params) {
 		facebook_post_user_status($params['message'], $params['user']);
 	}
 
+	return TRUE;
+}
+
+/**
+ * Hook into the object create handler for wire posts
+ * 
+ * @param string $event        Name of hook
+ * @param string $object_type  Entity type
+ * @param ElggObject  $object  Return value
+ * @return bool
+ */
+function facebook_wire_post_handler($event, $object_type, $object) {
+	$user = elgg_get_logged_in_user_entity();
+	if (elgg_instanceof($object, 'object', 'thewire') && $user->facebook_account_connected) {
+		$post_wall = get_input('facebook_post_wall');
+		
+		if ($post_wall != 0) {
+			facebook_post_user_status($object->description, $user);
+		}
+	}
 	return TRUE;
 }
