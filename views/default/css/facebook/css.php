@@ -30,3 +30,24 @@ span.facebook-message {
 	margin-right: auto;
 	display: block;
 }
+
+/* Hover menu */
+.facebook-post-menu-hover {
+	display: none;
+	height: auto;
+	z-index: 10000;
+	background-color: rgba(0,0,0,.7);
+}
+
+.facebook-hover-container {
+	color: #FFF;
+}
+
+.facebook-hover-container .facebook-post-container {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.facebook-hover-container .facebook-post-container label {
+	color: #FFFFFF;
+}

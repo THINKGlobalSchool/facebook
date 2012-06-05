@@ -1,6 +1,6 @@
 <?php
 /**
- * Facebook Upload Photo Form
+ * Facebook Hover Upload Photo Form
  * 
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
@@ -10,11 +10,10 @@
  * 
  */
 
-$post_confirm = elgg_echo('facebook:label:confirmpost');
-$post_submit = elgg_view('input/submit', array(
+$post_submit = elgg_view('output/url', array(
 	'name' => 'post-facebook-submit',
 	'id' => 'post-facebook-submit',
-	'value' => elgg_echo('facebook:label:post'),
+	'text' => elgg_echo('facebook:label:postphoto'),
 	'class' => 'elgg-button elgg-button-action',
 ));
 
@@ -24,9 +23,17 @@ $photo_guid = elgg_view('input/hidden', array(
 	'value' => $vars['image_guid'],
 ));
 
-echo <<<HTML
-	<label>$post_confirm</label><br /><br />
-	<center>$post_submit</center>
-	$photo_guid
+$content = <<<HTML
+	<div class="facebook-post-menu-hover">
+		<div class="facebook-hover-container">
+			<div class="facebook-post-container">
+				<center>
+					$post_submit
+				</center>
+				$photo_guid
+			</div>
+		</div>
+	</div>
 HTML;
-?>
+
+echo $content;

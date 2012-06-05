@@ -25,6 +25,27 @@ elgg.facebook.init = function() {
 	
 	// Delegate click handler for facebook photo publish
 	$('#post-facebook-submit').live('click', elgg.facebook.postPhoto);
+	
+
+	// Inject a class into each tidypics gallery item
+	$('.facebook-post-menu-hover').each(function() {
+		$(this).parent().find('.tidypics_album_images').addClass('tp-post-facebook');
+		$(this).appendTo($(this).parent().find('.tp-post-facebook'));
+	});
+	
+	// Show/Hide hover menu
+	$('.tp-post-facebook').hover(elgg.facebook.gallery_show_post, function() {
+			var $fbhovermenu = $(this).find('img').data('fb-hovermenu');
+			if ($fbhovermenu) {
+				$fbhovermenu.fadeOut();
+			}		
+	});
+
+	// Fix for hover menu when lighbox link is clicked
+	$('.tp-post-facebook a.tidypics-lightbox').live('click', function() {
+		$('.facebook-post-menu-hover').fadeOut();
+	});
+
 }
 
 // FB Init 
@@ -138,6 +159,28 @@ elgg.facebook.postPhoto = function(event) {
 	event.preventDefault();
 }
 
+
+/**
+ * Show the post hover in tidypics gallery mode
+ */
+elgg.facebook.gallery_show_post = function(event) {
+
+	$image = $(this).find('img');
+	
+	var $fbhovermenu = $image.data('fb-hovermenu') || null;
+
+
+	if (!$fbhovermenu) {
+		var $fbhovermenu = $image.closest('.tp-post-facebook').find(".facebook-post-menu-hover");
+		$image.data('fb-hovermenu', $fbhovermenu);
+	}
+
+	$fbhovermenu.css("width", $image.width() + 'px').fadeIn('fast').position({
+		my: "left top",
+		at: "left top",
+		of: $image
+	}).appendTo($image.closest('.tp-post-facebook'));
+}
 	
 elgg.register_hook_handler('init', 'system', elgg.facebook.init);
 elgg.register_hook_handler('ready', 'facebook', elgg.facebook.fb_init);
