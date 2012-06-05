@@ -46,6 +46,8 @@ function facebook_init() {
 		// Extend tidypics image menu
 		elgg_extend_view('tidypics/image_menu', 'facebook/image_menu');
 		
+		// Hook into the tidypics thumbnail handler
+		elgg_register_plugin_hook_handler('tp_thumbnail_link', 'album', 'facebook_image_thumbnail_handler');
 	}
 
 	// JS SDK
@@ -157,6 +159,39 @@ function facebook_status_hook_handler($hook, $type, $value, $params) {
 
 	return TRUE;
 }
+
+/**
+ * Hook to customize tidypics image thumbnail display
+ *
+ * @param string $hook   Name of hook
+ * @param string $type   Entity type
+ * @param mixed  $value  Return value
+ * @param array  $params Parameters
+ * @return mixed
+ */
+function facebook_image_thumbnail_handler($hook, $type, $value, $params) {
+	$image = $params['image'];
+	if (elgg_instanceof($image, 'object', 'image')  && $image->canEdit() && !elgg_in_context('ajaxmodule')) {
+		elgg_load_js('lightbox');
+		$form = elgg_view('forms/facebook/hover_upload', array('image_guid' => $image->guid));
+		
+		// This is junk.. tidypics needs to be re-worked
+		if (!$value) {
+			$url = elgg_get_site_url();
+			
+			$lightbox_url = $url . 'ajax/view/tidypics/image_lightbox?guid=' . $image->guid;
+
+			$value = "<div class='tidypics_album_images tp-publish-flickr'>
+						<a rel='tidypics-lightbox' class='tidypics-lightbox' href='{$lightbox_url}'><img id='{$image->guid}' src='{$url}photos/thumbnail/{$image->guid}/small/' alt='{$image->title}' /></a>
+					</div>";
+		}
+		
+		return $value . $form;
+	} else {
+		return FALSE;
+	}
+}
+
 
 /**
  * Hook into the object create handler for wire posts
