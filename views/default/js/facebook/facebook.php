@@ -20,6 +20,12 @@ elgg.facebook.set_token_url = elgg.get_site_url() + 'facebook/set_token';
 elgg.facebook.permission_scope = "<?php echo facebook_get_scope(); ?>";
 
 elgg.facebook.init = function() {
+	// When clicking 'post album to facebook' entity menu item, hide the action menu
+	$('.post-album-facebook-submit').live('click', function() {
+		$('.tgstheme-entity-menu-actions').hide();
+	});
+
+	
 	// Init special modal facebook lightboxes
 	$(".facebook-upload-lightbox").fancybox({
 		'modal': true,
@@ -187,11 +193,9 @@ elgg.facebook.postPhoto = function(event) {
 /**	
  * Post an album to facebook
  */ 
-elgg.facebook.postAlbum = function(event) {
+elgg.facebook.postAlbum = function(event) {	
 	var _this = $(this);
-	
-	var container = _this.closest('.facebook-post-album-container');
-	
+
 	// Lightbox
 	var lightbox = $($(this).attr('href'));
 	
@@ -200,7 +204,7 @@ elgg.facebook.postAlbum = function(event) {
 	// Set lightbox content
 	lightbox.html("<center><h3>" + title + "</h3></center><br /><div class='elgg-ajax-loader'></div>");
 	
-	var album_guid = container.find('.post-album-guid').val();
+	var album_guid = $(this).attr('id');
 	
 	// Post album!
 	elgg.action('facebook/uploadalbum', {

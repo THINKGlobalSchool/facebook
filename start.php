@@ -51,6 +51,9 @@ function facebook_init() {
 		
 		// Hook into the tidypics thumbnail handler
 		elgg_register_plugin_hook_handler('tp_thumbnail_link', 'album', 'facebook_image_thumbnail_handler');
+		
+		// Hook into entity menu for tidypics albums
+		elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_entity_menu');
 	}
 
 	// JS SDK
@@ -194,6 +197,41 @@ function facebook_image_thumbnail_handler($hook, $type, $value, $params) {
 	} else {
 		return FALSE;
 	}
+}
+
+/**
+ * Adds items to the entity menu
+ *
+ * @param sting  $hook   view
+ * @param string $type   input/tags
+ * @param mixed  $return  Value
+ * @param mixed  $params Params
+ *
+ * @return array
+ */
+function facebook_setup_entity_menu($hook, $type, $return, $params) {
+	$entity = $params['entity'];
+	
+
+	if (elgg_instanceof($entity, 'object', 'album') && $entity->canEdit()) {
+			$lightbox = "<div style='display: none;'>
+				<div class='facebook-post-album-lightbox' id='facebook-post-album-{$entity->guid}'>
+				</div>
+			</div>";
+			
+			$options = array(
+				'name' => 'post_album_to_facebook',
+				'text' => elgg_echo('facebook:label:postalbum') . $lightbox,
+				'title' => '',
+				'id' => $entity->guid,
+				'href' => "#facebook-post-album-{$entity->guid}",
+				'class' => 'post-album-facebook-submit facebook-upload-lightbox',
+				'section' => 'actions',
+				'priority' => 100,
+			);
+			$return[] = ElggMenuItem::factory($options);
+	} 
+	return $return;
 }
 
 
