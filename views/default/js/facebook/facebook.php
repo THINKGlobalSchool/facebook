@@ -20,21 +20,28 @@ elgg.facebook.set_token_url = elgg.get_site_url() + 'facebook/set_token';
 elgg.facebook.permission_scope = "<?php echo facebook_get_scope(); ?>";
 
 elgg.facebook.init = function() {
+	// Init special modal facebook lightboxes
+	$(".facebook-upload-lightbox").fancybox({
+		'modal': true,
+	});
+	
 	// Delegate click handler for login button
 	$(document).delegate('.facebook-login-button', 'click', elgg.facebook.loginClick);
 	
 	// Delegate click handler for facebook photo publish
-	$('#post-facebook-submit').live('click', elgg.facebook.postPhoto);
+	$('#post-facebook-submit').live('click', elgg.facebook.postPhoto); // @todo make this a class
 	
-
-	// Inject a class into each tidypics gallery item
+	// Delegate click handler for facebook photo publish
+	$('.post-album-facebook-submit').live('click', elgg.facebook.postAlbum);
+	
+	// Inject a class into each tidypics gallery item and move hover menu to parent
 	$('.facebook-post-menu-hover').each(function() {
 		$(this).parent().find('.tidypics_album_images').addClass('tp-post-facebook');
 		$(this).appendTo($(this).parent().find('.tp-post-facebook'));
 	});
 	
-	// Show/Hide hover menu
-	$('.tp-post-facebook').hover(elgg.facebook.gallery_show_post, function() {
+	// Show/Hide photo hover menu
+	$('.tp-post-facebook').hover(elgg.facebook.showPhotoHover, function() {
 			var $fbhovermenu = $(this).find('img').data('fb-hovermenu');
 			if ($fbhovermenu) {
 				$fbhovermenu.fadeOut();
@@ -46,6 +53,24 @@ elgg.facebook.init = function() {
 		$('.facebook-post-menu-hover').fadeOut();
 	});
 
+	// Inject a class into each tidypics album gallery item and move hover menu to parent
+	$('.facebook-post-album-menu-hover').each(function() {
+		$(this).prev().addClass('tp-post-album-facebook');
+		$(this).appendTo($(this).prev());
+	});
+	
+	// Show/Hide photo hover menu
+	$('.tp-post-album-facebook').hover(elgg.facebook.showAlbumHover, function() {
+			var $fbhovermenu = $(this).find('img').data('fb-album-hovermenu');
+			if ($fbhovermenu) {
+				$fbhovermenu.fadeOut();
+			}		
+	});
+	
+	// Fix for hover menu when lighbox link is clicked
+	$('.tp-post-album-facebook a.facebook-upload-lightbox').live('click', function() {
+		$('.facebook-post-album-menu-hover').hide();
+	});
 }
 
 // FB Init 
@@ -159,11 +184,47 @@ elgg.facebook.postPhoto = function(event) {
 	event.preventDefault();
 }
 
+/**	
+ * Post an album to facebook
+ */ 
+elgg.facebook.postAlbum = function(event) {
+	var _this = $(this);
+	
+	var container = _this.closest('.facebook-post-album-container');
+	
+	// Lightbox
+	var lightbox = $($(this).attr('href'));
+	
+	var title = elgg.echo('facebook:label:uploadingalbum');
+	
+	// Set lightbox content
+	lightbox.html("<center><h3>" + title + "</h3></center><br /><div class='elgg-ajax-loader'></div>");
+	
+	var album_guid = container.find('.post-album-guid').val();
+	
+	// Post album!
+	elgg.action('facebook/uploadalbum', {
+		data: {
+			album_guid: album_guid,
+		},
+		success: function(data) {
+			lightbox.find('.elgg-ajax-loader').remove();
+			if (data.status == -1) {
+				lightbox.append('<p class="facebook-album-upload-error">Error: ' + data.system_messages.error + '</p>');
+				lightbox.append("<br /><a href='#' class='elgg-button elgg-button-submit'  onClick='parent.jQuery.fancybox.close();'>Close</a>")
+			} else {
+				lightbox.append('<center><label>Success!</label></center>');
+				$.fancybox.close();
+			}
+		}
+	});
+	event.preventDefault();
+}
 
 /**
  * Show the post hover in tidypics gallery mode
  */
-elgg.facebook.gallery_show_post = function(event) {
+elgg.facebook.showPhotoHover = function(event) {
 
 	$image = $(this).find('img');
 	
@@ -180,6 +241,26 @@ elgg.facebook.gallery_show_post = function(event) {
 		at: "left top",
 		of: $image
 	}).appendTo($image.closest('.tp-post-facebook'));
+}
+
+/**
+ * Show the post hover in tidypics gallery mode
+ */
+elgg.facebook.showAlbumHover = function(event) {
+	$image = $(this).find('img');
+	
+	var $fbhovermenu = $image.data('fb-album-hovermenu') || null;
+
+	if (!$fbhovermenu) {
+		var $fbhovermenu = $image.closest('.tp-post-album-facebook').find(".facebook-post-album-menu-hover");
+		$image.data('fb-album-hovermenu', $fbhovermenu);
+	}
+
+	$fbhovermenu.css("width", $image.width() + 'px').fadeIn('fast').position({
+		my: "left top",
+		at: "left top",
+		of: $image
+	}).appendTo($image.closest('.tp-post-album-facebook'));
 }
 	
 elgg.register_hook_handler('init', 'system', elgg.facebook.init);
