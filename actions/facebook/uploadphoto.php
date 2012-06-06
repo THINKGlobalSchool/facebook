@@ -20,7 +20,7 @@ if (!elgg_instanceof($photo, 'object', 'image')) {
 	forward(REFERER);
 }
 
-// Check to make sure the user id matches the current user's connected id
+// Get a facebook client
 try {
 	$facebook = facebook_get_client();
 } catch (FacebookApiException $e) {

@@ -31,7 +31,7 @@ span.facebook-message {
 	display: block;
 }
 
-/* Hover menu */
+/* Photo Hover menu */
 .facebook-post-menu-hover {
 	display: none;
 	height: auto;
@@ -50,4 +50,39 @@ span.facebook-message {
 
 .facebook-hover-container .facebook-post-container label {
 	color: #FFFFFF;
+}
+
+/* Album Hover menu */
+.facebook-post-album-menu-hover {
+	display: none;
+	height: auto;
+	z-index: 10000;
+	background-color: rgba(0,0,0,.7);
+}
+
+.facebook-album-hover-container {
+	color: #FFF;
+}
+
+.facebook-album-hover-container .facebook-post-album-container {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.facebook-album-hover-container .facebook-post-album-container label {
+	color: #FFFFFF;
+}
+
+.post-album-facebook-submit {
+	font-size: 80%;
+}
+
+/* Album Upload Lightbox */
+.facebook-post-album-lightbox {
+	width: 200px;
+}
+
+.facebook-album-upload-error {
+	color: #666666;
+	font-style: italic;
 }

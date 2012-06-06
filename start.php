@@ -46,6 +46,9 @@ function facebook_init() {
 		// Extend tidypics image menu
 		elgg_extend_view('tidypics/image_menu', 'facebook/image_menu');
 		
+		// Extend tidypics album view
+		elgg_extend_view('object/album', 'facebook/album');
+		
 		// Hook into the tidypics thumbnail handler
 		elgg_register_plugin_hook_handler('tp_thumbnail_link', 'album', 'facebook_image_thumbnail_handler');
 	}
@@ -76,6 +79,7 @@ function facebook_init() {
 	elgg_register_action("facebook/usersettings", "$action_base/usersettings.php");
 	elgg_register_action("facebook/set_token", "$action_base/set_token.php");
 	elgg_register_action("facebook/uploadphoto", "$action_base/uploadphoto.php");
+	elgg_register_action("facebook/uploadalbum", "$action_base/uploadalbum.php");
 	
 	// Register plugin hook for status updates
 	elgg_register_plugin_hook_handler('status', 'user', 'facebook_status_hook_handler');

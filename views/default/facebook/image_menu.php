@@ -1,6 +1,6 @@
 <?php
 /**
- * Facebook Settings View
+ * Facebook Tidypics Image Menu Extension
  * 
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2

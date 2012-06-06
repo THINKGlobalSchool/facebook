@@ -102,7 +102,7 @@ function facebook_post_user_status($message, $user = NULL) {
  * Helper function to check for valid token
  * 
  * @param ElggUser $user
- * @return ?
+ * @return 
  */
 function facebook_check_token($user = NULL) {
 	if (!elgg_instanceof($user, 'user')) {
@@ -157,6 +157,62 @@ function facebook_get_extended_token($token, $user = NULL) {
 	}
 	
 	return $params;
+}
+
+/**
+ * Upload multiple photos to facebook
+ * Note: batch requests are limited to 50
+ *
+ * @param Facebook  $facebook  facebook client
+ * @param ElggBatch $photos    an ElggBatch of photos
+ * @param string    $location  graph api location for photo upload (Default: /me/photos)
+ * @return array
+ */
+function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photos") {
+	// Build facebook batch request
+	$fb_batch = array();
+	$fb_params = array();
+
+	$count = 1;
+
+	foreach ($photos as $photo) {
+		if ($count > 50) {
+			break; // If we pass more than 50 objects in, stop
+		}
+		
+		// Get photo file name
+		$large_thumb = new ElggFile();
+		$large_thumb->owner_guid = $photo->owner_guid;
+		$large_thumb->setFilename($photo->largethumb);
+		$filename = $large_thumb->getFilenameOnFilestore();
+
+		unset($large_thumb);
+		
+		// This image's request
+		$req = array(
+			'method' => 'POST',
+			'relative_url' => $location,
+			'attached_files' => 'file' . $count
+		);
+	
+		// Add request to batch
+		$fb_batch[] = json_encode($req);
+		
+		// Set filepath for uploaded image in params
+		$fb_params['file' . $count] = '@' . realpath($filename);
+		
+		$count++;
+	}
+
+	$fb_params['batch'] = '[' . implode(',' ,$fb_batch) . ']';
+
+	try {
+		$result = $facebook->api('/','post', $fb_params);
+	} catch(FacebookApiException $e) {
+		$result = array('error' => $e->getMessage());	
+	}
+	
+	return $result;
 }
 
 /**
