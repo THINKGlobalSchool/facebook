@@ -38,7 +38,7 @@ $english = array(
 	'facebook:label:postalbum' => 'Post album on Facebook',
 	'facebook:label:confirmpost' => 'Post this image to Facebook?',
 	'facebook:label:post' => 'Post',
-	'facebook:label:uploadingalbum' => 'Uploading Album',
+	'facebook:label:uploadingalbum' => 'Uploading Album to Facebook...',
 
 	// Messages
 	'facebook:error:invalidstate' => 'Invalid State',

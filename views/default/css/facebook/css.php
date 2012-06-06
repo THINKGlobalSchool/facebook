@@ -73,13 +73,13 @@ span.facebook-message {
 	color: #FFFFFF;
 }
 
-.post-album-facebook-submit {
+.facebook-post-album-container .post-album-facebook-submit {
 	font-size: 80%;
 }
 
 /* Album Upload Lightbox */
 .facebook-post-album-lightbox {
-	width: 200px;
+	width: 250px;
 }
 
 .facebook-album-upload-error {

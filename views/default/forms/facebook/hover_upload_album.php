@@ -18,6 +18,7 @@ $post_submit = elgg_view('output/url', array(
 	'name' => 'post-album-facebook-submit',
 	'href' => '#facebook-post-album-' . $album_guid,
 	'text' => elgg_echo('facebook:label:postalbum'),
+	'id' => $album_guid,
 	'class' => 'elgg-button elgg-button-action post-album-facebook-submit facebook-upload-lightbox',
 ));
 
