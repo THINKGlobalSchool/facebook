@@ -54,13 +54,20 @@ function facebook_init() {
 		
 		// Hook into entity menu for tidypics albums
 		elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_entity_menu');
-	} 
+	}
 	
-	// Public entity menu
-	elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_public_entity_menu');
-
-	// JS SDK
-	elgg_extend_view('page/elements/topbar', 'facebook/js-sdk');
+	if (elgg_is_logged_in()) {
+		// JS SDK
+		elgg_extend_view('page/elements/topbar', 'facebook/js-sdk');
+	} else {
+		elgg_extend_view('page/elements/footer', 'facebook/js-sdk');
+		$facebook_like = elgg_view('facebook/like');
+		elgg_register_menu_item('extras', array(
+			'name' => 'facebook_like',
+			'text' => $facebook_like,
+			'href' => FALSE,
+		));
+	}
 	
 	// Facebook footer
 	elgg_extend_view('page/elements/footer', 'facebook/footer');

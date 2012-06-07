@@ -18,7 +18,6 @@ $channel_url = elgg_get_site_url() . "mods/facebook/views/default/js/facebook/ch
 <script>
 	$(function() {	
 		$('body').prepend('<div id="fb-root"></div>');
-	
 		window.fbAsyncInit = function() {
 			FB.init({
 				appId      : '<?php echo $appId; ?>', // App ID
