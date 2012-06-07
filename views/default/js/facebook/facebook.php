@@ -21,10 +21,9 @@ elgg.facebook.permission_scope = "<?php echo facebook_get_scope(); ?>";
 
 elgg.facebook.init = function() {
 	// When clicking 'post album to facebook' entity menu item, hide the action menu
-	$('.post-album-facebook-submit').live('click', function() {
+	$('.post-album-facebook-submit, .facebook-share, .facebook-non-public').live('click', function() {
 		$('.tgstheme-entity-menu-actions').hide();
 	});
-
 	
 	// Init special modal facebook lightboxes
 	$(".facebook-upload-lightbox").fancybox({
@@ -35,10 +34,10 @@ elgg.facebook.init = function() {
 	$(document).delegate('.facebook-login-button', 'click', elgg.facebook.loginClick);
 	
 	// Delegate click handler for facebook photo publish
-	$('#post-facebook-submit').live('click', elgg.facebook.postPhoto); // @todo make this a class
+	$(document).delegate('#post-facebook-submit', 'click', elgg.facebook.postPhoto); // @todo make this a class
 	
 	// Delegate click handler for facebook photo publish
-	$('.post-album-facebook-submit').live('click', elgg.facebook.postAlbum);
+	$(document).delegate('.post-album-facebook-submit', 'click', elgg.facebook.postAlbum);
 	
 	// Inject a class into each tidypics gallery item and move hover menu to parent
 	$('.facebook-post-menu-hover').each(function() {
@@ -55,7 +54,7 @@ elgg.facebook.init = function() {
 	});
 
 	// Fix for hover menu when lighbox link is clicked
-	$('.tp-post-facebook a.tidypics-lightbox').live('click', function() {
+	$(document).delegate('.tp-post-facebook a.tidypics-lightbox', 'click', function() {
 		$('.facebook-post-menu-hover').fadeOut();
 	});
 
@@ -74,9 +73,21 @@ elgg.facebook.init = function() {
 	});
 	
 	// Fix for hover menu when lighbox link is clicked
-	$('.tp-post-album-facebook a.facebook-upload-lightbox').live('click', function() {
+	$(document).delegate('.tp-post-album-facebook a.facebook-upload-lightbox', 'click', function() {
 		$('.facebook-post-album-menu-hover').hide();
 	});
+	
+	// Click handler for 'share on facebook' link
+	$(document).delegate('.facebook-share', 'click', elgg.facebook.shareItem);
+	
+	// Click handler for share cancel button
+	$(document).delegate('.facebook-cancel-share', 'click', function(event) {
+		$.fancybox.close();
+		event.preventDefault();
+	});
+	
+	// Click handler for share cancel button
+	$(document).delegate('.facebook-update-share', 'click', elgg.facebook.updateShareItem);
 }
 
 // FB Init 
@@ -265,6 +276,66 @@ elgg.facebook.showAlbumHover = function(event) {
 		at: "left top",
 		of: $image
 	}).appendTo($image.closest('.tp-post-album-facebook'));
+}
+
+/**
+ * Share on facebook click handler
+ */
+elgg.facebook.shareItem = function(event) {
+	var entity_guid = $(this).attr('id');
+	elgg.facebook.share(entity_guid);
+	event.preventDefault();
+}
+
+/**
+ * Update the items access level and share the item on facebook
+ */
+elgg.facebook.updateShareItem = function(event) {
+	var $form = $(this).closest('form');
+	var entity_guid = $form.find('.facebook-share-entity-guid').val();
+	
+	var $submit = $form.find('div.share-foot');
+	var $submit_copy = $submit.clone();
+	
+	$submit.html('<div class="elgg-ajax-loader"></div>');
+
+	// Update access
+	elgg.action('facebook/updateaccess', {
+		data: {
+			entity_guid: entity_guid,
+		},
+		success: function(data) {
+			if (data.status == -1) {
+				// Error
+			} else {
+				if (elgg.facebook.share(entity_guid)) {
+					$.fancybox.close();
+				}
+			}
+			$submit.replaceWith($submit_copy);
+		}
+	});
+
+	event.preventDefault();
+}
+
+/**
+ * Call the facebook share action
+ */
+elgg.facebook.share = function(entity_guid) {
+	// Share item
+	elgg.action('facebook/share', {
+		data: {
+			entity_guid: entity_guid,
+		},
+		success: function(data) {
+			if (data.status == -1) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+	});
 }
 	
 elgg.register_hook_handler('init', 'system', elgg.facebook.init);
