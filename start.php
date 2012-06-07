@@ -254,6 +254,7 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 		'book',
 		'shared_doc',
 		'site',
+		'image',
 	);
 	
 	// If we're allowed to share this subtype, show the share link
