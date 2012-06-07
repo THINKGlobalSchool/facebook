@@ -84,17 +84,34 @@ function facebook_get_client($user = NULL) {
  * @return bool
  */
 function facebook_post_user_status($message, $user = NULL) {
+	$params['message'] = $message;
+
+	$result = facebook_make_post($params, $user);
+
+	if ($result['error']) {
+		register_error(elgg_echo('facebook:error:statuspost', array($result['error'])));
+	} else {
+		return TRUE;
+	}
+}
+
+
+/**
+ * Make a facebook post to user's wall
+ * 
+ * @param array    $params
+ * @param ElggUser $user (Optional)
+ * @return mixed
+ */
+function facebook_make_post($params, $user = NULL) {
 	try {
 		$facebook = facebook_get_client($user);
-
-		$ret_obj = $facebook->api('/me/feed', 'POST', array(
-			'message' => $message,
-		));
-
+		$ret_obj = $facebook->api('/me/feed', 'POST', $params);
 		return TRUE;
 	} catch (Exception $e) {
-		register_error(elgg_echo('facebook:error:statuspost', array($e->getMessage())));
-		return FALSE;
+		return array(
+			'error' => $e->getMessage(),
+		);
 	}
 }
 

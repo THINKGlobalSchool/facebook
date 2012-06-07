@@ -54,7 +54,10 @@ function facebook_init() {
 		
 		// Hook into entity menu for tidypics albums
 		elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_entity_menu');
-	}
+	} 
+	
+	// Public entity menu
+	elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_public_entity_menu');
 
 	// JS SDK
 	elgg_extend_view('page/elements/topbar', 'facebook/js-sdk');
@@ -71,6 +74,9 @@ function facebook_init() {
 	// Pagesetup event handler
 	elgg_register_event_handler('pagesetup','system','facebook_pagesetup');
 	
+	// Register event handler for facebook access updates
+	elgg_register_event_handler('update:access', 'object', 'facebook_access_update_handler');
+	
 	// Hook into object create event
 	elgg_register_event_handler('create', 'object', 'facebook_wire_post_handler');
 	
@@ -83,6 +89,8 @@ function facebook_init() {
 	elgg_register_action("facebook/set_token", "$action_base/set_token.php");
 	elgg_register_action("facebook/uploadphoto", "$action_base/uploadphoto.php");
 	elgg_register_action("facebook/uploadalbum", "$action_base/uploadalbum.php");
+	elgg_register_action("facebook/share", "$action_base/share.php");
+	elgg_register_action("facebook/updateaccess", "$action_base/updateaccess.php");
 	
 	// Register plugin hook for status updates
 	elgg_register_plugin_hook_handler('status', 'user', 'facebook_status_hook_handler');
@@ -212,7 +220,11 @@ function facebook_image_thumbnail_handler($hook, $type, $value, $params) {
 function facebook_setup_entity_menu($hook, $type, $return, $params) {
 	$entity = $params['entity'];
 	
+	if (!elgg_instanceof($entity, 'object')) {
+		return $return;
+	}
 
+	// Post album to facebook link
 	if (elgg_instanceof($entity, 'object', 'album') && $entity->canEdit()) {
 			$lightbox = "<div style='display: none;'>
 				<div class='facebook-post-album-lightbox' id='facebook-post-album-{$entity->guid}'>
@@ -230,7 +242,58 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 				'priority' => 100,
 			);
 			$return[] = ElggMenuItem::factory($options);
-	} 
+	}
+	
+	// @TODO should probable be a plugin hook
+	$share_exceptions = array(
+		'todo',
+		'todosubmission',
+		'forum', 
+		'forum_topic',
+		'forum_reply',
+		'book',
+		'shared_doc',
+		'site',
+	);
+	
+	// If we're allowed to share this subtype, show the share link
+	if (!in_array($entity->getSubtype(), $share_exceptions)) {
+		if ($entity->access_id == ACCESS_PUBLIC) {
+			$options = array(
+				'name' => 'share_on_facebook',
+				'text' => elgg_echo('facebook:label:sharefacebook') . $share_lightbox,
+				'title' => '',
+				'id' => $entity->guid,
+				'href' => '#facebook-share-' . $entity->guid,
+				'class' => 'facebook-share',
+				'section' => 'actions',
+				'priority' => 100,
+			);
+			$return[] = ElggMenuItem::factory($options);
+		
+		} else if ($entity->canEdit()){
+			$share_form = elgg_view_form('facebook/share', array(), array('entity_guid' => $entity->guid));
+		
+			$share_lightbox = "<div style='display: none;'>
+				<div class='facebook-share-lightbox' id='facebook-share-{$entity->guid}'>
+					$share_form
+				</div>
+			</div>";
+
+			$options = array(
+				'name' => 'share_on_facebook',
+				'text' => elgg_echo('facebook:label:sharefacebook') . $share_lightbox,
+				'title' => '',
+				'id' => $entity->guid,
+				'href' => '#facebook-share-' . $entity->guid,
+				'class' => 'facebook-non-public elgg-lightbox',
+				'section' => 'actions',
+				'priority' => 100,
+			);
+			$return[] = ElggMenuItem::factory($options);
+		}
+	}
+
 	return $return;
 }
 
@@ -250,6 +313,32 @@ function facebook_wire_post_handler($event, $object_type, $object) {
 		
 		if ($post_wall != 0) {
 			facebook_post_user_status($object->description, $user);
+		}
+	}
+	return TRUE;
+}
+
+/**
+ * Hook into update:access handler and perform extra processing for entities
+ * 
+ * @param string $event        Name of hook
+ * @param string $object_type  Entity type
+ * @param ElggObject  $object  Return value
+ * @return bool
+ */
+function facebook_access_update_handler($event, $object_type, $object) {
+	if (elgg_instanceof($object, 'object', 'album')) {
+		//get images from album and update access on image entities
+		$images = elgg_get_entities(array(
+			'types' => 'object',
+			'subtypes' => 'image',
+			'container_guids' => $object->guid,
+			'limit' => 0,
+		));
+
+		foreach ($images as $image) {
+			$image->access_id = ACCESS_PUBLIC;
+			$image->save();
 		}
 	}
 	return TRUE;
