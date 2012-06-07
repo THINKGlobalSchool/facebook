@@ -10,7 +10,7 @@
  * 
  */
 $appId = elgg_get_plugin_setting('app_id', 'facebook');
-$image = elgg_get_site_url() . 'mod/facebook/graphics/spot-fb-icon.jpg';
+$image = elgg_get_site_url() . 'mod/facebook/graphics/spot-fb-icon.png';
 $current_page_url = current_page_url();
 ?>
 <meta property="og:title" content="THINK Spot" />
