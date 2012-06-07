@@ -40,11 +40,8 @@ if (elgg_instanceof($entity, 'object')) {
 	// Show image thumbnail for albums
 	if ($entity->getSubtype() == 'album' && $entity->getCoverImageGuid()) {
 		$params['picture'] = elgg_get_site_url() . 'photos/thumbnail/' . $entity->cover . "/small/";
-	} 
-
-	// Show image thumbail for photos
-	if ($entity->getSubtype() == 'image') {
-		$params['picture'] = elgg_get_site_url() . 'photos/thumbnail/' . $entity->guid . "/small/";
+	} else {
+		$params['picture'] = elgg_get_site_url() . 'mod/facebook/graphics/spot-fb-icon.png';
 	}
 
 	// Make the post
