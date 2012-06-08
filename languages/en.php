@@ -30,7 +30,8 @@ $english = array(
 	'facebook:label:accountname' => 'Account Name',
 	'facebook:label:accountlink' => 'Account Link',
 	'facebook:label:autopostwire' => 'Automatically submit mini-posts as status updates',
-	'facebook:label:postwall' => 'Post to your Facebook wall?',
+	'facebook:label:postwall' => 'Post to your Facebook wall',
+	'facebook:label:admin_page_postwall' => 'Post to THINK Global School wall',
 	'facebook:label:actionrequired' => 'Action Required',
 	'facebook:label:login' => 'Login',
 	'facebook:label:settings' => 'Settings',
@@ -44,6 +45,7 @@ $english = array(
 	'facebook:label:sharepermissions' => 'In order to share this item on Facebook, you must set it\'s access level to public.',
 	'facebook:label:updateandshare' => 'Update access and share',
 	'facebook:label:cancel' => 'Cancel',
+	'facebook:label:admin_page' => 'Post to page (page admins can post directly to this page)',
 
 	// Messages
 	'facebook:error:invalidstate' => 'Invalid State',
@@ -62,6 +64,7 @@ $english = array(
 	'facebook:error:albumupload' => 'There wan an error posting your album to Facebook: %s',
 	'facebook:error:share' => 'There was an error sharing the item on Facebook: %s',
 	'facebook:error:updateaccess' => 'There was an error updating the entities access',
+	'facebook:error:admin_page' => 'Could not access admin page',
 	
 	'facebook:success:connectedaccount' => 'Your account has been connected to Facebook!',
 	'facebook:success:disconnectedaccount' => 'Your account has been disconnected from Facebook',

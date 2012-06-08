@@ -43,7 +43,7 @@ if (elgg_instanceof($entity, 'object')) {
 	$params['picture'] = elgg_trigger_plugin_hook('opengraph:image', 'facebook', array('entity' => $entity), $default_image);
 
 	// Make the post
-	$result = facebook_make_post($params);
+	$result = facebook_make_post($params, 'me');
 
 	// If we have an error, display it
 	if ($result['error']) {
