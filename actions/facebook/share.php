@@ -37,12 +37,10 @@ if (elgg_instanceof($entity, 'object')) {
 		$params['description'] = $description;
 	}
 	
-	// Show image thumbnail for albums
-	if ($entity->getSubtype() == 'album' && $entity->getCoverImageGuid()) {
-		$params['picture'] = elgg_get_site_url() . 'photos/thumbnail/' . $entity->cover . "/small/";
-	} else {
-		$params['picture'] = elgg_get_site_url() . 'mod/facebook/graphics/spot-fb-icon.png';
-	}
+	$default_image = elgg_get_site_url() . 'mod/facebook/graphics/spot-fb-icon.png';
+
+	// Trigger a plugin hook to allow plugins to set their own image
+	$params['picture'] = elgg_trigger_plugin_hook('opengraph:image', 'facebook', array('entity' => $entity), $default_image);
 
 	// Make the post
 	$result = facebook_make_post($params);
