@@ -291,7 +291,6 @@ elgg.facebook.shareItem = function(event) {
  * Update the items access level and share the item on facebook
  */
 elgg.facebook.updateShareItem = function(event) {
-	console.log('blah');
 	var $form = $(this).closest('form');
 	var entity_guid = $form.find('.facebook-share-entity-guid').val();
 	

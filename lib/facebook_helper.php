@@ -86,7 +86,7 @@ function facebook_get_client($user = NULL) {
 function facebook_post_user_status($message, $user = NULL) {
 	$params['message'] = $message;
 
-	$result = facebook_make_post($params, $user);
+	$result = facebook_make_post($params, 'me', $user);
 
 	if ($result['error']) {
 		register_error(elgg_echo('facebook:error:statuspost', array($result['error'])));
@@ -103,15 +103,43 @@ function facebook_post_user_status($message, $user = NULL) {
  * @param ElggUser $user (Optional)
  * @return mixed
  */
-function facebook_make_post($params, $user = NULL) {
+function facebook_make_post($params = array(), $location = 'me', $user = NULL) {
 	try {
 		$facebook = facebook_get_client($user);
-		$ret_obj = $facebook->api('/me/feed', 'POST', $params);
+		$ret_obj = $facebook->api("/{$location}/feed", 'POST', $params);
 		return TRUE;
 	} catch (Exception $e) {
 		return array(
 			'error' => $e->getMessage(),
 		);
+	}
+}
+
+/**
+ * Make a facebook post to the admin page wall
+ * 
+ * @param array    $params
+ * @param ElggUser $user (Optional)
+ * @return mixed
+ */
+function facebook_make_page_post($params = array(), $user = NULL) {
+	// Get the page
+	$page = facebook_get_admin_page($user);
+	
+	if (!$page) {
+		register_error(elgg_echo('facebook:error:admin_page'));
+		return FALSE;
+	}
+
+	// Set page access token
+	$params['access_token'] = $page['access_token'];
+
+	$result = facebook_make_post($params, $page['id'], $user);
+
+	if ($result['error']) {
+		register_error(elgg_echo('facebook:error:statuspost', array($result['error'])));
+	} else {
+		return TRUE;
 	}
 }
 
@@ -233,11 +261,55 @@ function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photo
 }
 
 /**
+ * Get a list of pages the user can administer
+ * 
+ * @param ElggUser $user
+ * @return array
+ */
+function facebook_get_pages($user = NULL) {
+	try {
+		$facebook = facebook_get_client($user);
+		$ret_obj = $facebook->api('/me/accounts', 'GET');
+		return $ret_obj;
+	} catch (Exception $e) {
+		return array(
+			'error' => $e->getMessage(),
+		);
+	}
+}
+
+
+/**
+ * Determine if user can post as the admin set page (See plugin settings)
+ * 
+ * @param ElggUser $user
+ * @return mixed
+ */
+function facebook_get_admin_page($user = NULL) {
+	$pages = facebook_get_pages($user);
+	if ($pages['error']) {
+		error_log($pages['error']);
+		return FALSE;
+	}
+	
+	$admin_page = elgg_get_plugin_setting('admin_page', 'facebook');
+	
+	foreach ($pages['data'] as $page) {
+		// If this page id matches ours, and we have create access
+		if ($page['id'] == $admin_page && in_array('CREATE_CONTENT', $page['perms'])) {
+			return $page;
+		}
+	}
+	
+	return FALSE;
+}
+
+/**
  * Get the required scope string for our app
  * @return string
  */
 function facebook_get_scope() {
-	return 'user_status,publish_stream,user_photos,photo_upload';
+	return 'user_status,publish_stream,user_photos,photo_upload,manage_pages';
 }
 
 // Helper function to circumvent PHP's strict handling of file_get_contents

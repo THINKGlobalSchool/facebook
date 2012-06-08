@@ -12,11 +12,15 @@
 
 $app_id = elgg_get_plugin_setting('app_id', 'facebook');
 $app_secret = elgg_get_plugin_setting('app_secret', 'facebook');
+$admin_page = elgg_get_plugin_setting('admin_page', 'facebook');
 
 $body .= '<p><label>' . elgg_echo('facebook:label:appid') . "</label><br />";
 $body .= elgg_view('input/text', array('name' => 'params[app_id]', 'value' => $app_id)) . "</p>";
 
 $body .= '<p><label>' . elgg_echo('facebook:label:appsecret') . "</label><br />";
 $body .= elgg_view('input/text', array('name' => 'params[app_secret]', 'value' => $app_secret)) . "</p>";
+
+$body .= '<p><label>' . elgg_echo('facebook:label:admin_page') . "</label><br />";
+$body .= elgg_view('input/text', array('name' => 'params[admin_page]', 'value' => $admin_page)) . "</p>";
 
 echo $body;

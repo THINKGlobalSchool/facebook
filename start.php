@@ -365,9 +365,18 @@ function facebook_wire_post_handler($event, $object_type, $object) {
 	$user = elgg_get_logged_in_user_entity();
 	if (elgg_instanceof($object, 'object', 'thewire') && $user->facebook_account_connected) {
 		$post_wall = get_input('facebook_post_wall');
-		
-		if ($post_wall != 0) {
-			facebook_post_user_status($object->description, $user);
+
+		// Make the checkbox/radio button is selected
+		if ($post_wall) {
+			// User selected admin wall, post to page
+			if ($post_wall == 'admin_page_wall') {
+				facebook_make_page_post(array(
+					'message' => $object->description,
+				), $user);
+			} else {
+				// Post to user's wall
+				facebook_post_user_status($object->description, $user);
+			}
 		}
 	}
 	return TRUE;
