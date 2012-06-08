@@ -15,7 +15,13 @@ $entity = $_SESSION['fb_og_entity'];
 
 $title = $entity->title ? $entity->title : $entity->name;
 $url = $entity->getURL();
-$image = elgg_get_site_url() . 'mod/facebook/graphics/spot-fb-icon.png';
+
+// Default image
+$default_image = elgg_get_site_url() . 'mod/facebook/graphics/spot-fb-icon.png';
+
+// Trigger a plugin hook to allow plugins to set their own open graph image
+$image = elgg_trigger_plugin_hook('opengraph:image', 'facebook', array('entity' => $entity), $default_image);
+
 $site_name = elgg_get_site_entity()->title;
 $appId = elgg_get_plugin_setting('app_id', 'facebook');
 

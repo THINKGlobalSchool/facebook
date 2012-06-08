@@ -72,6 +72,9 @@ function facebook_init() {
 		//));
 	}
 	
+	// Hook into facebook open graph image for tidypics
+	elgg_register_plugin_hook_handler('opengraph:image', 'facebook', 'tidypics_opengraph_image_handler');
+	
 	// Facebook footer
 	elgg_extend_view('page/elements/footer', 'facebook/footer');
 	
@@ -327,6 +330,24 @@ function facebook_full_view_handler($hook, $type, $return, $params) {
 		&& $params['vars']['full_view']) 
 	{	
 		$return .= elgg_view('facebook/opengraph', $params['vars']);
+	}
+	return $return;
+}
+
+/**
+ * Provide album cover for open graph image
+ *
+ * @param sting  $hook   view
+ * @param string $type   input/tags
+ * @param mixed  $return  Value
+ * @param mixed  $params Params
+ *
+ * @return array
+ */
+function tidypics_opengraph_image_handler($hook, $type, $return, $params) {
+	$entity = $params['entity'];
+	if (elgg_instanceof($entity, 'object', 'album')) {
+		return elgg_get_site_url() . 'photos/thumbnail/' . $entity->cover . "/small/";
 	}
 	return $return;
 }
