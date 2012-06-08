@@ -323,8 +323,9 @@ function facebook_full_view_handler($hook, $type, $return, $params) {
 	if (strpos($params['view'], 'object/') === 0                  // Check that view is an object view
 		&& isset($params['vars']['entity'])                       // Make sure we have an entity
 		&& strpos($params['view'], 'object/elements') !== 0       // Ignore object/elements views
+		&& strpos($params['view'], 'object/summary') !== 0       // Ignore object/elements views
 		&& $params['vars']['full_view']) 
-	{
+	{	
 		$return .= elgg_view('facebook/opengraph', $params['vars']);
 	}
 	return $return;
