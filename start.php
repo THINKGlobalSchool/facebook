@@ -60,13 +60,16 @@ function facebook_init() {
 		// JS SDK
 		elgg_extend_view('page/elements/topbar', 'facebook/js-sdk');
 	} else {
+		//elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_public_entity_menu');
+		elgg_register_plugin_hook_handler('view', 'all', 'facebook_full_view_handler');
+
 		elgg_extend_view('page/elements/footer', 'facebook/js-sdk');
 		$facebook_like = elgg_view('facebook/like');
-		elgg_register_menu_item('extras', array(
-			'name' => 'facebook_like',
-			'text' => $facebook_like,
-			'href' => FALSE,
-		));
+		//elgg_register_menu_item('extras', array(
+		//	'name' => 'facebook_like',
+		//	'text' => $facebook_like,
+		//	'href' => FALSE,
+		//));
 	}
 	
 	// Facebook footer
@@ -74,9 +77,6 @@ function facebook_init() {
 	
 	// Wire extender
 	elgg_extend_view('forms/thewire/add', 'facebook/wirepost');
-
-	// Extend page head
-	elgg_extend_view('page/elements/head', 'facebook/head');
 
 	// Facebook page handler
 	elgg_register_page_handler('facebook', 'facebook_page_handler');
@@ -305,6 +305,28 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 		}
 	}
 
+	return $return;
+}
+
+/**
+ * Adds items to the public entity menu
+ *
+ * @param sting  $hook   view
+ * @param string $type   input/tags
+ * @param mixed  $return  Value
+ * @param mixed  $params Params
+ *
+ * @return array
+ */
+function facebook_full_view_handler($hook, $type, $return, $params) {
+	// Only dealing with straight up object views here
+	if (strpos($params['view'], 'object/') === 0                  // Check that view is an object view
+		&& isset($params['vars']['entity'])                       // Make sure we have an entity
+		&& strpos($params['view'], 'object/elements') !== 0       // Ignore object/elements views
+		&& $params['vars']['full_view']) 
+	{
+		$return .= elgg_view('facebook/opengraph', $params['vars']);
+	}
 	return $return;
 }
 
