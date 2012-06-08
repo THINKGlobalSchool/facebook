@@ -86,3 +86,8 @@ span.facebook-message {
 	color: #666666;
 	font-style: italic;
 }
+
+/* Tweak wire display */
+.elgg-form-thewire-add .elgg-input-radio {
+	margin-left: 3px;
+}
