@@ -73,7 +73,7 @@ span.facebook-message {
 	color: #FFFFFF;
 }
 
-.facebook-post-album-container .post-album-facebook-submit {
+.facebook-album-hover-container .post-album-facebook-submit {
 	font-size: 80%;
 }
 
@@ -90,4 +90,9 @@ span.facebook-message {
 /* Tweak wire display */
 .elgg-form-thewire-add .elgg-input-radio {
 	margin-left: 3px;
+}
+
+/* Wall choice form */
+.facebook-wall-foot {
+	margin-top: 6px;
 }

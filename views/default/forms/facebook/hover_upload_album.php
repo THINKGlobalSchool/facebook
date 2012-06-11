@@ -14,12 +14,19 @@ elgg_load_js('lightbox');
 
 $album_guid = $vars['album_guid'];
 
+if (elgg_get_logged_in_user_entity()->facebook_can_post_to_admin_page) {
+	$post_admin = ' facebook-post-admin-page';
+	$href = elgg_get_site_url() . 'ajax/view/forms/facebook/wall?album_guid=' . $album_guid;
+} else {
+	$href = '#facebook-post-album-' . $album_guid;
+}
+
 $post_submit = elgg_view('output/url', array(
 	'name' => 'post-album-facebook-submit',
-	'href' => '#facebook-post-album-' . $album_guid,
+	'href' => $href,
 	'text' => elgg_echo('facebook:label:postalbum'),
 	'id' => $album_guid,
-	'class' => 'elgg-button elgg-button-action post-album-facebook-submit facebook-upload-lightbox',
+	'class' => 'elgg-button elgg-button-action post-album-facebook-submit facebook-upload-lightbox' . $post_admin,
 ));
 
 $album_guid_input = elgg_view('input/hidden', array(

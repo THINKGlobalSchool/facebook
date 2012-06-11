@@ -46,6 +46,11 @@ $english = array(
 	'facebook:label:updateandshare' => 'Update access and share',
 	'facebook:label:cancel' => 'Cancel',
 	'facebook:label:admin_page' => 'Post to page (page admins can post directly to this page)',
+	'facebook:label:whichwall' => 'Which wall do you want to post this to?',
+	'facebook:label:postpagewall' => 'Post to THINK Global School wall?',
+	'facebook:label:yourwall' => 'Your wall',
+	'facebook:label:pagewall' => 'THINK Global School wall',
+	'facebook:label:admin_page_role' => 'Page post role',
 
 	// Messages
 	'facebook:error:invalidstate' => 'Invalid State',

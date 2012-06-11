@@ -211,12 +211,12 @@ function facebook_get_extended_token($token, $user = NULL) {
  * @param Facebook  $facebook  facebook client
  * @param ElggBatch $photos    an ElggBatch of photos
  * @param string    $location  graph api location for photo upload (Default: /me/photos)
+ * @param array     $fb_params extra parameters
  * @return array
  */
-function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photos") {
+function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photos", $fb_params = array()) {
 	// Build facebook batch request
 	$fb_batch = array();
-	$fb_params = array();
 
 	$count = 1;
 
@@ -302,6 +302,31 @@ function facebook_get_admin_page($user = NULL) {
 	}
 	
 	return FALSE;
+}
+
+/**
+ * Helper function to determine if given user
+ * can publish to admin fb page
+ * 
+ * @param ElggUser $user The user
+ * @return bool
+ */
+function facebook_can_page_publish($user = NULL) {
+	if (elgg_is_admin_logged_in()) {
+		return true;
+	}
+	
+	if (!elgg_instanceof($user, 'user')) {
+		$user = elgg_get_logged_in_user_entity();
+	}
+	
+	$role = get_entity(elgg_get_plugin_setting('admin_page_role', 'facebook'));
+	
+	if (elgg_instanceof($role, 'object', 'role') && $role->isMember($user)) {
+		return true;
+	} 
+
+	return false;
 }
 
 /**
