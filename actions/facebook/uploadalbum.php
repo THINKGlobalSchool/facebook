@@ -14,6 +14,7 @@
 set_time_limit(0);
 
 $album_guid = get_input('album_guid');
+$post_page = get_input('post_page');
 
 $album = get_entity($album_guid);
 
@@ -35,7 +36,7 @@ try {
 $facebook->setFileUploadSupport(true);
 
 // Facebook album details
-$album_details = array(
+$params = array(
         'name' => $album->title
 );
 
@@ -43,12 +44,32 @@ $message = strip_tags($album->description);
 
 // Add description
 if ($message) {
-	$album_details['message'] = $message;
+	$params['message'] = $message;
+}
+
+// If we're attempting to post an album to the admin page
+if ($post_page) {
+	// Get the page
+	$page = facebook_get_admin_page($user);
+
+	if (!$page) {
+		register_error(elgg_echo('facebook:error:admin_page'));
+		forward(REFERER);
+	}
+
+	// Set page access token
+	$params['access_token'] = $page['access_token'];
+	$batch_params['access_token'] = $params['access_token'];
+	
+	$post_location = $page['id'];
+} else {
+	// Just posting to our wall
+	$post_location = 'me';
 }
 
 // Create the album
 try {
-	$create_album = $facebook->api('/me/albums', 'post', $album_details);	
+	$create_album = $facebook->api("/{$post_location}/albums", 'post', $params);	
 } catch (FacebookApiException $e) {
 	register_error($e->getMessage());
 	forward(REFERER);
@@ -78,7 +99,7 @@ if ($photo_count <= 50) { // Batch limit
 	// Get photos in a batch
 	$photos = new ElggBatch('elgg_get_entities', $options);
 
-	$result = facebook_batch_upload_photos($facebook, $photos, $album_url);
+	$result = facebook_batch_upload_photos($facebook, $photos, $album_url, $batch_params);
 	
 	if (!$result['error']) {
 		system_message(elgg_echo('facebook:success:albumupload'));

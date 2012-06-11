@@ -110,6 +110,9 @@ function facebook_init() {
 
 	// Admin menu items
 	elgg_register_admin_menu_item('administer', 'account_connections', 'facebook');
+	
+	// Ajax view whitelist
+	elgg_register_ajax_view('forms/facebook/wall');
 
 	return TRUE;
 }
@@ -125,7 +128,14 @@ function facebook_page_handler($page) {
 	if (elgg_is_xhr()) {
 		switch ($page[0]) {
 			case 'check':
-				echo facebook_check_token(elgg_get_logged_in_user_entity());
+				$user = elgg_get_logged_in_user_entity();
+				$result = facebook_check_token(elgg_get_logged_in_user_entity());
+				if ($result && facebook_can_page_publish($user) && facebook_get_admin_page($user)) {
+					$user->facebook_can_post_to_admin_page = TRUE;
+				} else {
+					$user->facebook_can_post_to_admin_page = FALSE;
+				}
+				echo $result;
 				break;
 			default:
 				break;
@@ -199,7 +209,11 @@ function facebook_status_hook_handler($hook, $type, $value, $params) {
  */
 function facebook_image_thumbnail_handler($hook, $type, $value, $params) {
 	$image = $params['image'];
-	if (elgg_instanceof($image, 'object', 'image')  && $image->canEdit() && !elgg_in_context('ajaxmodule')) {
+	$user = elgg_get_logged_in_user_entity();
+	if (elgg_instanceof($image, 'object', 'image') 
+		&& ($image->canEdit() || $user->facebook_can_post_to_admin_page)
+		&& !elgg_in_context('ajaxmodule')) 
+	{
 		elgg_load_js('lightbox');
 		$form = elgg_view('forms/facebook/hover_upload', array('image_guid' => $image->guid));
 		
@@ -237,20 +251,29 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 		return $return;
 	}
 
+	$user = elgg_get_logged_in_user_entity();
+
 	// Post album to facebook link
-	if (elgg_instanceof($entity, 'object', 'album') && $entity->canEdit()) {
+	if (elgg_instanceof($entity, 'object', 'album') && ($entity->canEdit() || $user->facebook_can_post_to_admin_page)) {
 			$lightbox = "<div style='display: none;'>
 				<div class='facebook-post-album-lightbox' id='facebook-post-album-{$entity->guid}'>
 				</div>
 			</div>";
+			
+			if ($user->facebook_can_post_to_admin_page) {
+				$post_admin = ' facebook-post-admin-page';
+				$href = elgg_get_site_url() . 'ajax/view/forms/facebook/wall?album_guid=' . $entity->guid;
+			} else {
+				$href = '#facebook-post-album-' . $entity->guid;
+			}
 			
 			$options = array(
 				'name' => 'post_album_to_facebook',
 				'text' => elgg_echo('facebook:label:postalbum') . $lightbox,
 				'title' => '',
 				'id' => $entity->guid,
-				'href' => "#facebook-post-album-{$entity->guid}",
-				'class' => 'post-album-facebook-submit facebook-upload-lightbox',
+				'href' => $href,
+				'class' => 'post-album-facebook-submit facebook-upload-lightbox' . $post_admin,
 				'section' => 'actions',
 				'priority' => 100,
 			);

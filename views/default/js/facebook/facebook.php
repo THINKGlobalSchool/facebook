@@ -30,11 +30,24 @@ elgg.facebook.init = function() {
 		'modal': true,
 	});
 	
+	// Init facebook wall choice lightboxes
+	$(".facebook-post-admin-page").fancybox({
+		'onStart' : function() {
+			// Hide hover menus
+			$('.facebook-post-menu-hover').fadeOut();
+			$('.flickr-publish-menu-hover').fadeOut();
+			$('.facebook-post-album-menu-hover').fadeOut();
+		},
+	});
+	
 	// Delegate click handler for login button
 	$(document).delegate('.facebook-login-button', 'click', elgg.facebook.loginClick);
 	
+	// Delegate click handler for facebook photo/album publishing for admin page enabled users
+	$(document).delegate('.facebook-post-admin-page', 'click', elgg.facebook.postAdminIntercept);
+	
 	// Delegate click handler for facebook photo publish
-	$(document).delegate('#post-facebook-submit', 'click', elgg.facebook.postPhoto); // @todo make this a class
+	$(document).delegate('.post-facebook-submit', 'click', elgg.facebook.postPhoto);
 	
 	// Delegate click handler for facebook photo publish
 	$(document).delegate('.post-album-facebook-submit', 'click', elgg.facebook.postAlbum);
@@ -56,6 +69,7 @@ elgg.facebook.init = function() {
 	// Fix for hover menu when lighbox link is clicked
 	$(document).delegate('.tp-post-facebook a.tidypics-lightbox', 'click', function() {
 		$('.facebook-post-menu-hover').fadeOut();
+		$('.flickr-publish-menu-hover').fadeOut();
 	});
 
 	// Inject a class into each tidypics album gallery item and move hover menu to parent
@@ -184,9 +198,16 @@ elgg.facebook.postPhoto = function(event) {
 	container.addClass('elgg-ajax-loader');
 	container.html("<span>&nbsp;</span>");
 	
+	var post_page = 0;
+
+	if ($(this).hasClass('post-page')) {
+		post_page = 1;
+	}
+
 	elgg.action('facebook/uploadphoto', {
 		data: {
-			photo_guid: photo_guid
+			photo_guid: photo_guid,
+			post_page: post_page,
 		},
 		success: function(data) {
 			if (data.status == -1) {
@@ -195,9 +216,18 @@ elgg.facebook.postPhoto = function(event) {
 			} else {
 				container.removeClass('elgg-ajax-loader');
 				container.html('<center><label>Success!</label></center>');
+				$.fancybox.close();
 			}
 		}
 	});
+	event.preventDefault();
+}
+
+/**	
+ * Post a photo to facebook
+ */ 
+elgg.facebook.postAdminIntercept = function(event) {
+	event.stopImmediatePropagation();
 	event.preventDefault();
 }
 
@@ -217,10 +247,17 @@ elgg.facebook.postAlbum = function(event) {
 	
 	var album_guid = $(this).attr('id');
 	
+	var post_page = 0;
+
+	if ($(this).hasClass('post-page')) {
+		post_page = 1;
+	}
+	
 	// Post album!
 	elgg.action('facebook/uploadalbum', {
 		data: {
 			album_guid: album_guid,
+			post_page: post_page,
 		},
 		success: function(data) {
 			lightbox.find('.elgg-ajax-loader').remove();

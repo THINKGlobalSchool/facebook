@@ -11,6 +11,7 @@
  */
 
 $photo_guid = get_input('photo_guid');
+$post_page = get_input('post_page');
 
 $photo = get_entity($photo_guid);
 
@@ -48,9 +49,28 @@ $filename = $large_thumb->getFilenameOnFilestore();
 // Add image path to upload args
 $args['image'] = '@' . realpath($filename);
 
+// If we're attempting to post a photo to the admin page
+if ($post_page) {
+	// Get the page
+	$page = facebook_get_admin_page($user);
+
+	if (!$page) {
+		register_error(elgg_echo('facebook:error:admin_page'));
+		forward(REFERER);
+	}
+
+	// Set page access token
+	$args['access_token'] = $page['access_token'];
+	
+	$location = $page['id'];
+} else {
+	// Just posting to our wall
+	$location = 'me';
+}
+
 try {
 	// Post it!
-	$data = $facebook->api('/me/photos', 'post', $args);
+	$data = $facebook->api("/{$location}/photos", 'post', $args);
 	system_message(elgg_echo('facebook:success:photoupload'));
 } catch (Exception $e) {
 	// Something went wrong, display message

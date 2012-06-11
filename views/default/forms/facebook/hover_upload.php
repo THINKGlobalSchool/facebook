@@ -10,27 +10,34 @@
  * 
  */
 
+$photo_guid = $vars['image_guid'];
+
+if (elgg_get_logged_in_user_entity()->facebook_can_post_to_admin_page) {
+	$post_admin = ' facebook-post-admin-page';
+	$href = elgg_get_site_url() . 'ajax/view/forms/facebook/wall?photo_guid=' . $photo_guid;
+}
+
 $post_submit = elgg_view('output/url', array(
 	'name' => 'post-facebook-submit',
-	'id' => 'post-facebook-submit',
 	'text' => elgg_echo('facebook:label:postphoto'),
-	'class' => 'elgg-button elgg-button-action',
+	'href' => $href,
+	'class' => 'elgg-button elgg-button-action post-facebook-submit' . $post_admin,
 ));
 
-$photo_guid = elgg_view('input/hidden', array(
+$photo_guid_input = elgg_view('input/hidden', array(
 	'name' => 'post-photo-guid',
 	'class' => 'post-photo-guid',
-	'value' => $vars['image_guid'],
+	'value' => $photo_guid,
 ));
 
 $content = <<<HTML
-	<div class="facebook-post-menu-hover">
+	<div class="facebook-post-menu-hover" id='facebook-post-menu-hover-$photo_guid'>
 		<div class="facebook-hover-container">
 			<div class="facebook-post-container">
 				<center>
 					$post_submit
 				</center>
-				$photo_guid
+				$photo_guid_input
 			</div>
 		</div>
 	</div>

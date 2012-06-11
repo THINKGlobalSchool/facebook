@@ -10,12 +10,14 @@
  * 
  */
 
+$user = elgg_get_logged_in_user_entity();
+
 // This is gross, and will need to be updated when tidypics gets better
 // this is how we can determine if we're in tidypics album gallery mode
 if ((elgg_get_context() == "search" || !$vars['full_view']) 
 	&& get_input('search_viewtype') == "gallery" 
 	&& !elgg_in_context('ajaxmodule')
-	&& $album->canEdit()) 
+	&& ($album->canEdit() || $user->facebook_can_post_to_admin_page))
 {
 	echo elgg_view('forms/facebook/hover_upload_album', array('album_guid' => $album->guid)); 
 }
