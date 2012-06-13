@@ -102,6 +102,9 @@ if ($photo_count <= 50) { // Batch limit
 	$result = facebook_batch_upload_photos($facebook, $photos, $album_url, $batch_params);
 	
 	if (!$result['error']) {
+		if ($post_page) {
+			$album->posted_to_facebook_page = TRUE;
+		}
 		system_message(elgg_echo('facebook:success:albumupload'));
 	} else {
 		register_error(elgg_echo('facebook:error:albumupload', array($result['error'])));
@@ -133,6 +136,9 @@ if ($photo_count <= 50) { // Batch limit
 		}
 	} else {
 		// All was good!
+		if ($post_page) {
+			$album->posted_to_facebook_page = TRUE;
+		}
 		system_message(elgg_echo('facebook:success:albumupload'));
 	}
 }

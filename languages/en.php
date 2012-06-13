@@ -51,6 +51,7 @@ $english = array(
 	'facebook:label:yourwall' => 'Your wall',
 	'facebook:label:pagewall' => 'THINK Global School wall',
 	'facebook:label:admin_page_role' => 'Page post role',
+	'facebook:label:repost' => 'This item has already been posted to the THINK Global School Facebook Page. Are you sure you want to post it again?',
 
 	// Messages
 	'facebook:error:invalidstate' => 'Invalid State',
