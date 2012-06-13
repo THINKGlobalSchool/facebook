@@ -19,7 +19,6 @@ elgg_register_event_handler('init','system','facebook_init');
 
 // Init function
 function facebook_init() {
-
 	// Register/Load helper library
 	elgg_register_library('elgg:facebook_helper', elgg_get_plugins_path() . 'facebook/lib/facebook_helper.php');
 	elgg_load_library('elgg:facebook_helper');
@@ -267,13 +266,17 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 				$href = '#facebook-post-album-' . $entity->guid;
 			}
 			
+			if ($entity->posted_to_facebook_page) {
+				$repost = ' facebook-repost';
+			}
+			
 			$options = array(
 				'name' => 'post_album_to_facebook',
 				'text' => elgg_echo('facebook:label:postalbum') . $lightbox,
 				'title' => '',
 				'id' => $entity->guid,
 				'href' => $href,
-				'class' => 'post-album-facebook-submit facebook-upload-lightbox' . $post_admin,
+				'class' => 'post-album-facebook-submit facebook-upload-lightbox' . $post_admin . $repost,
 				'section' => 'actions',
 				'priority' => 100,
 			);

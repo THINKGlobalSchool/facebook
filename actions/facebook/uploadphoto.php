@@ -72,6 +72,10 @@ try {
 	// Post it!
 	$data = $facebook->api("/{$location}/photos", 'post', $args);
 	system_message(elgg_echo('facebook:success:photoupload'));
+	
+	if ($post_page) {
+		$photo->posted_to_facebook_page = TRUE;
+	}
 } catch (Exception $e) {
 	// Something went wrong, display message
 	register_error(elgg_echo('facebook:error:photoupload', array($e->getMessage())));

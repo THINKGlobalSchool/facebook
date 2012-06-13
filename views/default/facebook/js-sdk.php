@@ -21,7 +21,7 @@ $channel_url = elgg_get_site_url() . "mods/facebook/views/default/js/facebook/ch
 		window.fbAsyncInit = function() {
 			FB.init({
 				appId      : '<?php echo $appId; ?>', // App ID
-				channelUrl : '<?php echo $channel_url; ?>', // Channel File @TODO
+				channelUrl : '<?php echo $channel_url; ?>', // Channel File
 				status     : true, // check login status
 				cookie     : true, // enable cookies to allow the server to access the session
 				xfbml      : true  // parse XFBML

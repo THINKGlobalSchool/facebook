@@ -11,17 +11,22 @@
  */
 
 $photo_guid = $vars['image_guid'];
+$photo = get_entity($photo_guid);
 
 if (elgg_get_logged_in_user_entity()->facebook_can_post_to_admin_page) {
 	$post_admin = ' facebook-post-admin-page';
 	$href = elgg_get_site_url() . 'ajax/view/forms/facebook/wall?photo_guid=' . $photo_guid;
 }
 
+if ($photo->posted_to_facebook_page) {
+	$repost = ' facebook-repost';
+}
+
 $post_submit = elgg_view('output/url', array(
 	'name' => 'post-facebook-submit',
 	'text' => elgg_echo('facebook:label:postphoto'),
 	'href' => $href,
-	'class' => 'elgg-button elgg-button-action post-facebook-submit' . $post_admin,
+	'class' => 'elgg-button elgg-button-action post-facebook-submit' . $post_admin . $repost,
 ));
 
 $photo_guid_input = elgg_view('input/hidden', array(

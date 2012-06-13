@@ -32,11 +32,15 @@ elgg.facebook.init = function() {
 	
 	// Init facebook wall choice lightboxes
 	$(".facebook-post-admin-page").fancybox({
-		'onStart' : function() {
+		'onStart' : function(link) {
 			// Hide hover menus
 			$('.facebook-post-menu-hover').fadeOut();
 			$('.flickr-publish-menu-hover').fadeOut();
 			$('.facebook-post-album-menu-hover').fadeOut();
+			
+			if ($(link).hasClass('facebook-repost') && !elgg.facebook.repostIntercept()) {
+				return false;
+			}
 		},
 	});
 	
@@ -224,7 +228,15 @@ elgg.facebook.postPhoto = function(event) {
 }
 
 /**	
- * Post a photo to facebook
+ * Intercept and display a confirmation for reposts
+ */ 
+elgg.facebook.repostIntercept = function(event) {
+	var r = confirm(elgg.echo('facebook:label:repost'));
+	return r;
+}
+
+/**	
+ * Intercept events for admin page posting
  */ 
 elgg.facebook.postAdminIntercept = function(event) {
 	event.stopImmediatePropagation();
