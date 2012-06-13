@@ -40,7 +40,7 @@ $params = array(
         'name' => $album->title
 );
 
-$message = strip_tags($album->description);
+$message = facebook_decode_text($album->description);
 
 // Add description
 if ($message) {

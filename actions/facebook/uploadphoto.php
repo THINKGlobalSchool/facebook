@@ -31,7 +31,7 @@ try {
 
 $facebook->setFileUploadSupport(true);
 
-$message = strip_tags($photo->description);
+$message = facebook_decode_text($photo->description);
 
 // Args array for photo upload
 $args = array();

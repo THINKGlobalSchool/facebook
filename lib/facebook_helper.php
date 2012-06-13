@@ -337,6 +337,15 @@ function facebook_get_scope() {
 	return 'user_status,publish_stream,user_photos,photo_upload,manage_pages';
 }
 
+/**
+ * Helper function to parse and prepare encoded text for posting to facebook
+ */
+function facebook_decode_text($text) {
+	$text = strip_tags($text);
+	$text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+	return $text;
+}
+
 // Helper function to circumvent PHP's strict handling of file_get_contents
 function curl_get_file_contents($URL) {
 	$c = curl_init();
