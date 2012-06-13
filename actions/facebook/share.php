@@ -31,7 +31,7 @@ if (elgg_instanceof($entity, 'object')) {
 	}
 
 	// Entity description
-	$description = strip_tags(elgg_get_excerpt($entity->description));
+	$description = facebook_decode_text(elgg_get_excerpt($entity->description));
 
 	if (!empty($description)) {
 		$params['description'] = $description;

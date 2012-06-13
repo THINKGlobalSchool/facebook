@@ -15,19 +15,35 @@ $user = elgg_get_logged_in_user_entity();
 // User has connected account to facebook, show checkbox to post to wall
 if ($user->facebook_account_connected) {
 	$wall_label = elgg_echo('facebook:label:postwall');
-	
-	// @TODO role?
-	if (facebook_get_admin_page()) {
+
+	// If user is a page admin and is in designated role
+	if ($user->facebook_can_post_to_admin_page) {
 		$admin_wall_label = elgg_echo('facebook:label:admin_page_postwall');
-	
-		$wire_input = elgg_view('input/radio', array(
+		
+		$wire_input = elgg_view('input/checkboxes', array(
 			'name' => "facebook_post_wall", 
+			'id' => 'facebook-post-to-wall',
 			'value' => 1,  
-			'options' => array(
-				$wall_label => 'wall',
-				$admin_wall_label => 'admin_page_wall'
-			),
+			'options' => array($wall_label => 'wall'),
+			'onclick' => 'javascript:facebookUncheck("facebook-post-to-page")',
 		));
+		
+		$wire_input .= elgg_view('input/checkboxes', array(
+			'name' => "facebook_post_page", 
+			'id' => 'facebook-post-to-page',
+			'value' => 1,  
+			'options' => array($admin_wall_label => 'admin_page_wall'),
+			'onclick' => 'javascript:facebookUncheck("facebook-post-to-wall")',
+		));
+		
+		echo <<<JAVASCRIPT
+			<script type='text/javascript'>
+				function facebookUncheck(id) {
+					$('#' + id).find('input').attr('checked', false);
+				}
+			</script>
+JAVASCRIPT;
+		
 	} else {
 		$wire_input = elgg_view('input/checkboxes', array(
 			'name' => "facebook_post_wall", 
