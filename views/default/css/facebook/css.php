@@ -10,7 +10,6 @@
  * 
  */
 ?>
-?>
 /*<style>*/
 
 #facebook-dialog-trigger {
