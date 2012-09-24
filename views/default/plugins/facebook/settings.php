@@ -22,6 +22,7 @@ $app_id = elgg_get_plugin_setting('app_id', 'facebook');
 $app_secret = elgg_get_plugin_setting('app_secret', 'facebook');
 $admin_page = elgg_get_plugin_setting('admin_page', 'facebook');
 $admin_page_role = elgg_get_plugin_setting('admin_page_role', 'facebook');
+$login_enabled = elgg_get_plugin_setting('login_enabled', 'facebook');
 
 $body .= '<div><label>' . elgg_echo('facebook:label:appid') . "</label><br />";
 $body .= elgg_view('input/text', array('name' => 'params[app_id]', 'value' => $app_id)) . "</div>";
@@ -37,6 +38,16 @@ $body .= elgg_view('input/dropdown', array(
 	'name' => 'params[admin_page_role]',
 	'options_values' => $roles_options,
 	'value' => $admin_page_role,
+)) . "</div>";
+
+$body .= '<div><label>' . elgg_echo('facebook:label:admin_login_enabled') . "</label><br />";
+$body .= elgg_view('input/dropdown', array(
+	'name' => 'params[login_enabled]',
+	'options_values' => array(
+		'1' => 'Yes',
+		'0' => 'No',
+	),
+	'value' => (int)$login_enabled,
 )) . "</div>";
 
 

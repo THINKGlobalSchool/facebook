@@ -51,8 +51,6 @@ function facebook_get_user_settings_content() {
  * @return mixed
  */
 function facebook_get_client($user = NULL) {
-	elgg_load_library('elgg:facebook_sdk');
-
 	if (!$user) {
 		$user = elgg_get_logged_in_user_entity();
 	}
@@ -66,13 +64,27 @@ function facebook_get_client($user = NULL) {
 	$appId = elgg_get_plugin_setting('app_id', 'facebook');
 	$secret = elgg_get_plugin_setting('app_secret', 'facebook');
 
+	$facebook = facebook_get_bare_client();
+
+	$facebook->setAccessToken($access_token);
+
+	return $facebook;
+}
+
+/**
+ * Grab a bare facebook client for logins
+ */
+function facebook_get_bare_client() {
+	elgg_load_library('elgg:facebook_sdk');
+	
+	$appId = elgg_get_plugin_setting('app_id', 'facebook');
+	$secret = elgg_get_plugin_setting('app_secret', 'facebook');
+	
 	$facebook = new Facebook(array(
 	  'appId'  => $appId,
 	  'secret' => $secret,
 	));
-
-	$facebook->setAccessToken($access_token);
-
+	
 	return $facebook;
 }
 
@@ -334,7 +346,7 @@ function facebook_can_page_publish($user = NULL) {
  * @return string
  */
 function facebook_get_scope() {
-	return 'user_status,publish_stream,user_photos,photo_upload,manage_pages';
+	return 'email,user_status,publish_stream,user_photos,photo_upload,manage_pages';
 }
 
 /**
@@ -359,4 +371,121 @@ function curl_get_file_contents($URL) {
 	} else {
 		return FALSE;
 	}
+}
+
+/**
+ * Determine if we can use facebook to login
+ * 
+ * @return bool
+ */
+function facebook_can_login() {
+	if (!$key = elgg_get_plugin_setting('app_id', 'facebook')) {
+		return FALSE;
+	}
+	
+	if (!$secret = elgg_get_plugin_setting('app_secret', 'facebook')) {
+		return FALSE;
+	}
+	
+	return elgg_get_plugin_setting('login_enabled', 'facebook');
+}
+
+/**
+ * Get facebook login URL
+ * 
+ * @return string
+ */
+function facebook_get_authorize_url($next='') {
+	global $CONFIG;
+	
+	if (!$next) {
+		// default to login page
+		$next = "{$CONFIG->site->url}facebook/login";
+	}
+	
+	$facebook = facebook_get_bare_client();
+	$url = $facebook->getLoginUrl(array(
+		'redirect_uri' => $next,
+		'scope' => facebook_get_scope(),
+	));
+	return $url;
+}
+
+function facebook_login() {
+	global $CONFIG;
+	
+	// sanity check
+	if (!facebook_can_login()) {
+		forward();
+	}
+	$facebook = NULL;
+	$facebook = facebook_get_bare_client();
+
+	$fb_user_id = $facebook->getUser();
+
+	/* attempt to find user */
+	$options = array(
+		'type' => 'user',
+		'metadata_name' => 'facebook_account_id',
+		'metadata_value' => $fb_user_id,
+	);
+	
+	$users = elgg_get_entities_from_metadata($options);
+
+	if (!$users) {
+		$data = $facebook->api('/me');
+
+		// check new registration allowed
+		if (!$CONFIG->allow_registration) {
+			register_error(elgg_echo('registerdisabled'));
+			forward();
+		}
+
+		// trigger a hook for plugin authors to intercept
+		if (!trigger_plugin_hook('new_facebook_user', 'facebook', array('account' => $data), TRUE)) {
+			// halt execution
+			register_error(elgg_echo('facebook:login:error'));
+			forward();
+		}
+		
+		$username = substr(parse_url($data['link'], PHP_URL_PATH), 1) . '_fb';
+		$password = generate_random_cleartext_password();
+
+		try {			
+			// create new account
+			if (!$user_id = register_user($username, $password, $data['name'], $data['email'])) {
+				register_error(elgg_echo('registerbad'));
+				forward();
+			}
+		} catch (RegistrationException $r) {
+			register_error($r->getMessage());
+			forward();
+		}
+		
+		$user = new ElggUser($user_id);
+
+		// pull in Facebook icon
+	//	if (! facebookservice_update_user_avatar($user, "https://graph.facebook.com/{$data['id']}/picture?type=large")) {
+	//		register_error(elgg_echo('facebookservice:avatar:error'));
+	//	}
+		
+		$user->facebook_account_connected = TRUE;		
+		$user->facebook_access_token = $facebook->getAccessToken();
+		$user->facebook_account_id = $fb_user_id;
+		
+		$user->save();
+
+		system_message(elgg_echo('facebook:login:new'));
+		login($user);
+		forward();	
+	} elseif (count($users) == 1) {
+		// Got a user, log them in
+		login($users[0]);
+		system_message(elgg_echo('facebook:login:success'));
+		forward();
+	}
+	
+	// register login error
+	register_error(elgg_echo('facebook:login:error'));
+	forward();
 }

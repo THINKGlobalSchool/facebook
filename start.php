@@ -36,6 +36,16 @@ function facebook_init() {
 	elgg_register_simplecache_view('css/facebook/css');
 	elgg_register_css('elgg.facebook', $fb_css);
 	elgg_load_css('elgg.facebook');
+	
+	// Register CSS for social login
+	$s_css = elgg_get_simplecache_url('css', 'social_login');
+	elgg_register_simplecache_view('css/social_login');
+	elgg_register_css('elgg.social_login', $s_css);
+
+	// Extend login view for facebook login button
+	if (facebook_can_login()) {
+		elgg_extend_view('forms/login', 'facebook/login');
+	}
 
 	// Load fb related js if user is connected
 	if (elgg_is_logged_in() && elgg_get_logged_in_user_entity()->facebook_account_connected) {
@@ -64,11 +74,6 @@ function facebook_init() {
 
 		elgg_extend_view('page/elements/footer', 'facebook/js-sdk');
 		$facebook_like = elgg_view('facebook/like');
-		//elgg_register_menu_item('extras', array(
-		//	'name' => 'facebook_like',
-		//	'text' => $facebook_like,
-		//	'href' => FALSE,
-		//));
 	}
 	
 	// Hook into facebook open graph image for tidypics
@@ -144,7 +149,9 @@ function facebook_page_handler($page) {
 			case 'test':
 				$params = facebook_test();
 				break;
-			default;
+			case 'login':
+				facebook_login();
+				break;
 			case 'settings':
 			default:
 				gatekeeper();
