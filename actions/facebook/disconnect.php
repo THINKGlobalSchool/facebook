@@ -40,5 +40,6 @@ if ($user_id) {
 $user->facebook_account_connected = FALSE;
 $user->facebook_access_token = NULL;
 $user->facebook_access_token_expires = NULL;
+$user->facebook_account_id = NULL;
 
 forward(REFERER);

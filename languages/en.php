@@ -51,7 +51,22 @@ $english = array(
 	'facebook:label:yourwall' => 'Your wall',
 	'facebook:label:pagewall' => 'THINK Global School wall',
 	'facebook:label:admin_page_role' => 'Page post role',
+	'facebook:label:admin_login_enabled' => 'Enable Facebook Login',
 	'facebook:label:repost' => 'This item has already been posted to the THINK Global School Facebook Page. Are you sure you want to post it again?',
+	'facebook:label:facebooklogin' => 'Or, sign in with..',
+	
+	'facebook:login:success' => 'You have signed in with Facebook.',
+	'facebook:login:error' => 'Unable to sign on with Facebook.',
+	'facebook:login:new' => "A new {$CONFIG->site->name} account has been created from your Facebook account.",
+	
+	'facebook:usersettings:description' => "Link your {$CONFIG->site->name} account with Facebook.",
+	'facebook:usersettings:authorize' => "You must first <a href=\"%s\">authorize</a> {$CONFIG->site->name} to access Facebook.",
+	'facebook:authorize:error' => "Could not authorize {$CONFIG->site->name} to access Facebook.",
+	'facebook:authorize:success' => "Authorized {$CONFIG->site->name} to access Facebook.",
+	'facebook:usersettings:authorized' => "You have authorized {$CONFIG->site->name} to access your Facebook account: <a href=\"%2\$s\">%1\$s</a>.",
+	'facebook:usersettings:revoke' => 'Click <a href="%s">here</a> to revoke access.',
+	'facebook:revoke:success' => 'Facebook access has been revoked.',
+	'facebook:avatar:error' => 'Unable to retrieve user profile icon.',
 
 	// Messages
 	'facebook:error:invalidstate' => 'Invalid State',
