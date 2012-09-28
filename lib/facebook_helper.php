@@ -233,8 +233,8 @@ function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photo
 	$count = 1;
 
 	foreach ($photos as $photo) {
-		if ($count > 50) {
-			break; // If we pass more than 50 objects in, stop
+		if ($count > 10) {
+			break; // If we pass more than 10 objects in, stop
 		}
 		
 		// Get photo file name
