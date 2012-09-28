@@ -122,7 +122,7 @@ if ($photo_count <= 10) { // Batch limit
 		$options['offset'] = $options['limit'] * $i;
 		$photos = new ElggBatch('elgg_get_entities', $options);
 		
-		$result = facebook_batch_upload_photos($facebook, $photos, $album_url);
+		$result = facebook_batch_upload_photos($facebook, $photos, $album_url, $batch_params);
 		
 		if ($result['error']) {
 			$errors[] = $result['error'];
