@@ -94,7 +94,7 @@ $album_url = '/'. $album_uid . '/photos';
 
 unset($options['count']);
 
-// If we have less than 50 images
+// If we have less than 10 images
 if ($photo_count <= 10) { // Batch limit
 	// Get photos in a batch
 	$photos = new ElggBatch('elgg_get_entities', $options);

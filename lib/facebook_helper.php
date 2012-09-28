@@ -244,7 +244,11 @@ function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photo
 		$filename = $large_thumb->getFilenameOnFilestore();
 
 		unset($large_thumb);
-		
+
+		if (strpos($filename,'largethumb') === FALSE) {
+			continue;
+		}
+
 		// This image's request
 		$req = array(
 			'method' => 'POST',
