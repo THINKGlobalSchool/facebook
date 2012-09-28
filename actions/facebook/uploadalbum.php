@@ -95,7 +95,7 @@ $album_url = '/'. $album_uid . '/photos';
 unset($options['count']);
 
 // If we have less than 50 images
-if ($photo_count <= 50) { // Batch limit
+if ($photo_count <= 10) { // Batch limit
 	// Get photos in a batch
 	$photos = new ElggBatch('elgg_get_entities', $options);
 
@@ -111,9 +111,9 @@ if ($photo_count <= 50) { // Batch limit
 	}
 } else {
 	// Determine number batch uploads we need to perform
-	$batch_count = ceil($photo_count / 50);
+	$batch_count = ceil($photo_count / 10);
 
-	$options['limit'] = 50;
+	$options['limit'] = 10;
 	
 	$errors = array();
 
