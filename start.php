@@ -285,7 +285,7 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 				'href' => $href,
 				'class' => 'post-album-facebook-submit facebook-upload-lightbox' . $post_admin . $repost,
 				'section' => 'actions',
-				'priority' => 100,
+				'priority' => 200,
 			);
 			$return[] = ElggMenuItem::factory($options);
 	}
@@ -314,7 +314,7 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 				'href' => '#facebook-share-' . $entity->guid,
 				'class' => 'facebook-share',
 				'section' => 'actions',
-				'priority' => 100,
+				'priority' => 200,
 			);
 			$return[] = ElggMenuItem::factory($options);
 		
@@ -335,7 +335,7 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 				'href' => '#facebook-share-' . $entity->guid,
 				'class' => 'facebook-non-public elgg-lightbox',
 				'section' => 'actions',
-				'priority' => 100,
+				'priority' => 200,
 			);
 			$return[] = ElggMenuItem::factory($options);
 		}
