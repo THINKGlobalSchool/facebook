@@ -113,4 +113,10 @@ hr.facebook-hr {
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/** Entity Menu Icon **/
+.elgg-menu-item-share-on-facebook,
+.elgg-menu-item-post-album-to-facebook {
+	background: transparent url(<?php echo elgg_get_site_url(); ?>mod/facebook/graphics/f_icon.png) no-repeat left !important;
+}
+
 /*</style>*/
