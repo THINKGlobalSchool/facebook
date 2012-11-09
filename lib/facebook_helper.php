@@ -422,6 +422,7 @@ function facebook_login() {
 	if (!facebook_can_login()) {
 		forward();
 	}
+
 	$facebook = NULL;
 	$facebook = facebook_get_bare_client();
 
@@ -457,7 +458,7 @@ function facebook_login() {
 
 		try {			
 			// create new account
-			if (!$user_id = register_user($username, $password, $data['name'], $data['email'])) {
+			if (!$user_guid = register_user($username, $password, $data['name'], $data['email'])) {
 				register_error(elgg_echo('registerbad'));
 				forward();
 			}
@@ -466,7 +467,7 @@ function facebook_login() {
 			forward();
 		}
 		
-		$user = new ElggUser($user_id);
+		$user = get_entity($user_guid);
 
 		// pull in Facebook icon
 	//	if (! facebookservice_update_user_avatar($user, "https://graph.facebook.com/{$data['id']}/picture?type=large")) {
