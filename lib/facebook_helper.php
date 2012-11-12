@@ -447,42 +447,20 @@ function facebook_login() {
 		}
 
 		// trigger a hook for plugin authors to intercept
-		if (!trigger_plugin_hook('new_facebook_user', 'facebook', array('account' => $data), TRUE)) {
+		if (!trigger_plugin_hook('new_facebook_user', 'facebook', array('facebook' => $facebook, 'account' => $data), TRUE)) {
 			// halt execution
 			register_error(elgg_echo('facebook:login:error'));
 			forward();
 		}
-		
-		$username = substr(parse_url($data['link'], PHP_URL_PATH), 1) . '_fb';
-		$password = generate_random_cleartext_password();
 
-		try {			
-			// create new account
-			if (!$user_guid = register_user($username, $password, $data['name'], $data['email'])) {
-				register_error(elgg_echo('registerbad'));
-				forward();
-			}
-		} catch (RegistrationException $r) {
-			register_error($r->getMessage());
+		// If we've successfully created a facebook user, login!
+		if ($user = facebook_create_user_with_data($facebook, $data)) {
+			system_message(elgg_echo('facebook:login:new'));
+			login($user);
 			forward();
+		} else {
+			forward(REFERER);
 		}
-		
-		$user = get_entity($user_guid);
-
-		// pull in Facebook icon
-	//	if (! facebookservice_update_user_avatar($user, "https://graph.facebook.com/{$data['id']}/picture?type=large")) {
-	//		register_error(elgg_echo('facebookservice:avatar:error'));
-	//	}
-		
-		$user->facebook_account_connected = TRUE;		
-		$user->facebook_access_token = $facebook->getAccessToken();
-		$user->facebook_account_id = $fb_user_id;
-		
-		$user->save();
-
-		system_message(elgg_echo('facebook:login:new'));
-		login($user);
-		forward();	
 	} elseif (count($users) == 1) {
 		// Got a user, log them in
 		login($users[0]);
@@ -493,4 +471,39 @@ function facebook_login() {
 	// register login error
 	register_error(elgg_echo('facebook:login:error'));
 	forward();
+}
+
+/**
+ * Create a user with given facebook data
+ * 
+ * @param array $data Facebook data ('link', 'email', 'name', etc)
+ * @return mixed
+ */
+function facebook_create_user_with_data($facebook, $data) {
+	$username = substr(parse_url($data['link'], PHP_URL_PATH), 1) . '_fb';
+	$password = generate_random_cleartext_password();
+
+	// Try to create new account
+	try {
+		if (!$user_guid = register_user($username, $password, $data['name'], $data['email'])) {
+			register_error(elgg_echo('registerbad'));
+			return FALSE;
+		}
+	} catch (RegistrationException $r) {
+		register_error($r->getMessage());
+		return FALSE;
+	}
+
+	$user = get_entity($user_guid);
+
+	if (elgg_instanceof($user, 'user')) {
+		$user->facebook_account_connected = TRUE;		
+		$user->facebook_access_token = $facebook->getAccessToken();
+		$user->facebook_account_id = $facebook->getUser();
+		$user->save();
+		return $user;
+	} else {
+		register_error(elgg_echo('registerbad'));
+		return FALSE;
+	}
 }
