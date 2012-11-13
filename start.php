@@ -362,7 +362,11 @@ function facebook_full_view_handler($hook, $type, $return, $params) {
 		&& strpos($params['view'], 'object/summary') !== 0       // Ignore object/elements views
 		&& $params['vars']['full_view']) 
 	{	
-		$return .= elgg_view('facebook/opengraph', $params['vars']);
+		// Fix for object views that output another object view (ie pages and page_top)
+		if (!get_input('opengraph_added')) {
+			set_input('opengraph_added', TRUE);
+			$return .= elgg_view('facebook/opengraph', $params['vars']);
+		}
 	}
 	return $return;
 }
