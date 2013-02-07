@@ -31,19 +31,8 @@ elgg.facebook.init = function() {
 	});
 	
 	// Init facebook wall choice lightboxes
-	$(".facebook-post-admin-page").fancybox({
-		'onStart' : function(link) {
-			// Hide hover menus
-			$('.facebook-post-menu-hover').fadeOut();
-			$('.flickr-publish-menu-hover').fadeOut();
-			$('.facebook-post-album-menu-hover').fadeOut();
-			
-			if ($(link).hasClass('facebook-repost') && !elgg.facebook.repostIntercept()) {
-				return false;
-			}
-		},
-	});
-	
+	elgg.facebook.initWallLightboxes();
+
 	// Delegate click handler for login button
 	$(document).delegate('.facebook-login-button', 'click', elgg.facebook.loginClick);
 	
@@ -55,45 +44,6 @@ elgg.facebook.init = function() {
 	
 	// Delegate click handler for facebook photo publish
 	$(document).delegate('.post-album-facebook-submit', 'click', elgg.facebook.postAlbum);
-	
-	// Inject a class into each tidypics gallery item and move hover menu to parent
-	$('.facebook-post-menu-hover').each(function() {
-		$(this).parent().find('.tidypics_album_images').addClass('tp-post-facebook');
-		$(this).appendTo($(this).parent().find('.tp-post-facebook'));
-	});
-	
-	// Show/Hide photo hover menu
-	$('.tp-post-facebook').hover(elgg.facebook.showPhotoHover, function() {
-			var $fbhovermenu = $(this).find('img').data('fb-hovermenu');
-			if ($fbhovermenu) {
-				$fbhovermenu.fadeOut();
-			}		
-	});
-
-	// Fix for hover menu when lighbox link is clicked
-	$(document).delegate('.tp-post-facebook a.tidypics-lightbox', 'click', function() {
-		$('.facebook-post-menu-hover').fadeOut();
-		$('.flickr-publish-menu-hover').fadeOut();
-	});
-
-	// Inject a class into each tidypics album gallery item and move hover menu to parent
-	$('.facebook-post-album-menu-hover').each(function() {
-		$(this).prev().addClass('tp-post-album-facebook');
-		$(this).appendTo($(this).prev());
-	});
-	
-	// Show/Hide photo hover menu
-	$('.tp-post-album-facebook').hover(elgg.facebook.showAlbumHover, function() {
-			var $fbhovermenu = $(this).find('img').data('fb-album-hovermenu');
-			if ($fbhovermenu) {
-				$fbhovermenu.fadeOut();
-			}		
-	});
-	
-	// Fix for hover menu when lighbox link is clicked
-	$(document).delegate('.tp-post-album-facebook a.facebook-upload-lightbox', 'click', function() {
-		$('.facebook-post-album-menu-hover').hide();
-	});
 	
 	// Click handler for 'share on facebook' link
 	$(document).delegate('.facebook-share', 'click', elgg.facebook.shareItem);
@@ -123,7 +73,7 @@ elgg.facebook.checkToken = function() {
 		success: function(data) {
 			var result = $.parseJSON(data);
 
-			if (result.error) {
+			if (result && result.error) {
 				if (result.error.type == 'OAuthException') {
 					//console.log(result.error.message);
 					var $dialog_link = $('#facebook-dialog-trigger');
@@ -133,7 +83,8 @@ elgg.facebook.checkToken = function() {
 					$dialog_link.click();
 
 				} else {
-					register_error(result.error.message);
+					//elgg.register_error(result.error.message);
+					console.log(result.error.message);
 				}
 			} else {
 				// Success
@@ -141,7 +92,8 @@ elgg.facebook.checkToken = function() {
 			
 		},
 		error: function() {
-			register_error(elgg.echo('facebook:error:checktoken'));
+			//elgg.register_error(elgg.echo('facebook:error:checktoken'));
+			console.log(elgg.echo('facebook:error:checktoken'));
 		}
 	});
 }
@@ -286,48 +238,6 @@ elgg.facebook.postAlbum = function(event) {
 }
 
 /**
- * Show the post hover in tidypics gallery mode
- */
-elgg.facebook.showPhotoHover = function(event) {
-
-	$image = $(this).find('img');
-	
-	var $fbhovermenu = $image.data('fb-hovermenu') || null;
-
-
-	if (!$fbhovermenu) {
-		var $fbhovermenu = $image.closest('.tp-post-facebook').find(".facebook-post-menu-hover");
-		$image.data('fb-hovermenu', $fbhovermenu);
-	}
-
-	$fbhovermenu.css("width", $image.width() + 'px').fadeIn('fast').position({
-		my: "left top",
-		at: "left top",
-		of: $image
-	}).appendTo($image.closest('.tp-post-facebook'));
-}
-
-/**
- * Show the post hover in tidypics gallery mode
- */
-elgg.facebook.showAlbumHover = function(event) {
-	$image = $(this).find('img');
-	
-	var $fbhovermenu = $image.data('fb-album-hovermenu') || null;
-
-	if (!$fbhovermenu) {
-		var $fbhovermenu = $image.closest('.tp-post-album-facebook').find(".facebook-post-album-menu-hover");
-		$image.data('fb-album-hovermenu', $fbhovermenu);
-	}
-
-	$fbhovermenu.css("width", $image.width() + 'px').fadeIn('fast').position({
-		my: "left top",
-		at: "left top",
-		of: $image
-	}).appendTo($image.closest('.tp-post-album-facebook'));
-}
-
-/**
  * Share on facebook click handler
  */
 elgg.facebook.shareItem = function(event) {
@@ -385,10 +295,45 @@ elgg.facebook.share = function(entity_guid) {
 		}
 	});
 }
+
+// Init facebook wall choice lightboxes
+elgg.facebook.initWallLightboxes = function(onClosed) {
+	$(".facebook-post-admin-page").fancybox({
+		'onStart' : function(link) {			
+			if ($(link).hasClass('facebook-repost') && !elgg.facebook.repostIntercept()) {
+				return false;
+			}
+		},
+		'onClosed' : onClosed, 
+	});	
+}
+
+// initialize facbook photos lightboxes
+elgg.facebook.initPhotosLightboxes = function() {
+	$(".facebook-photo-lightbox").fancybox({
+		'onClosed' : function() {
+			// Re-bind tidypics fancybox events
+			$.fancybox2.bindEvents();
+		}
+	});
+
+	// Init facebook wall choice lightboxes
+	elgg.facebook.initWallLightboxes(function() {
+		// Re-bind tidypics fancybox events
+		$.fancybox2.bindEvents();
+	});
+
+	// Init special modal facebook lightboxes
+	$(".facebook-upload-lightbox").fancybox({
+		'modal': true,
+	});
+}
 	
 elgg.register_hook_handler('init', 'system', elgg.facebook.init);
 elgg.register_hook_handler('ready', 'facebook', elgg.facebook.fb_init);
-
+elgg.register_hook_handler('photoLightboxAfterShow', 'tidypics', elgg.facebook.initPhotosLightboxes);
+elgg.register_hook_handler('loadTabContentComplete', 'tidypics', elgg.facebook.initPhotosLightboxes);
+elgg.register_hook_handler('infiniteWayPointLoaded', 'tidypics', elgg.facebook.initPhotosLightboxes);
 
 /**
  * Easy peasy jquery plugin for querystring parsing
