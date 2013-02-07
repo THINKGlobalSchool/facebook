@@ -33,11 +33,21 @@ span.facebook-message {
 }
 
 /* Photo Hover menu */
+.tp-post-facebook {
+	position: relative;
+}
+
+.tp-post-facebook:hover .facebook-post-menu-hover {
+	display: block;
+}
+
 .facebook-post-menu-hover {
 	display: none;
 	height: auto;
 	z-index: 10000;
-	background-color: rgba(0,0,0,.7);
+	position: absolute;
+	width: 161px;
+	bottom: 0;
 }
 
 .facebook-hover-container {
@@ -47,6 +57,14 @@ span.facebook-message {
 .facebook-hover-container .facebook-post-container {
 	padding-top: 5px;
 	padding-bottom: 5px;
+	background-color: rgba(0,0,0,.7);
+	margin-left: 4px;
+	margin-right: 4px;
+	margin-bottom: 8px;
+}
+
+.facebook-hover-container .facebook-post-container.elgg-ajax-loader {
+	background-color: #FFFFFF;
 }
 
 .facebook-hover-container .facebook-post-container label {
@@ -54,11 +72,17 @@ span.facebook-message {
 }
 
 /* Album Hover menu */
+.tp-post-facebook:hover .facebook-post-album-menu-hover {
+	display: block;
+}
+
 .facebook-post-album-menu-hover {
 	display: none;
 	height: auto;
 	z-index: 10000;
-	background-color: rgba(0,0,0,.7);
+	position: absolute;
+	width: 161px;
+	top: 0;
 }
 
 .facebook-album-hover-container {
@@ -68,6 +92,10 @@ span.facebook-message {
 .facebook-album-hover-container .facebook-post-album-container {
 	padding-top: 5px;
 	padding-bottom: 5px;
+	background-color: rgba(0,0,0,.7);
+	margin-left: 4px;
+	margin-right: 4px;
+	margin-top: 4px;
 }
 
 .facebook-album-hover-container .facebook-post-album-container label {
@@ -115,7 +143,8 @@ hr.facebook-hr {
 
 /** Entity Menu Icon **/
 .elgg-menu-item-share-on-facebook,
-.elgg-menu-item-post-album-to-facebook {
+.elgg-menu-item-post-album-to-facebook,
+.elgg-menu-item-post-photo-to-facebook {
 	background: transparent url(<?php echo elgg_get_site_url(); ?>mod/facebook/graphics/f_icon.png) no-repeat left !important;
 }
 

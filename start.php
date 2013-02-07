@@ -42,6 +42,9 @@ function facebook_init() {
 	elgg_register_simplecache_view('css/social_login');
 	elgg_register_css('elgg.social_login', $s_css);
 
+	// Load lightbox js
+	elgg_load_js('lightbox');
+
 	// Extend login view for facebook login button
 	if (facebook_can_login()) {
 		elgg_extend_view('forms/login', 'facebook/login');
@@ -49,17 +52,13 @@ function facebook_init() {
 
 	// Load fb related js if user is connected
 	if (elgg_is_logged_in() && elgg_get_logged_in_user_entity()->facebook_account_connected) {
-		//elgg_load_js('elgg.facebookchannel');
 		elgg_load_js('elgg.facebook');
+		
+		// Hook into the tidypics photo thumbnail handler
+		elgg_register_plugin_hook_handler('photo_summary_params', 'tidypics', 'facebook_photo_summary_handler');
 
-		// Extend tidypics image menu
-		elgg_extend_view('tidypics/image_menu', 'facebook/image_menu');
-		
-		// Extend tidypics album view
-		elgg_extend_view('object/album', 'facebook/album');
-		
-		// Hook into the tidypics thumbnail handler
-		elgg_register_plugin_hook_handler('tp_thumbnail_link', 'album', 'facebook_image_thumbnail_handler');
+		// Hook into the tidypics album thumbnail handler
+		elgg_register_plugin_hook_handler('album_summary_params', 'tidypics', 'facebook_album_summary_handler');
 		
 		// Hook into entity menu for tidypics albums
 		elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_entity_menu');
@@ -205,7 +204,7 @@ function facebook_status_hook_handler($hook, $type, $value, $params) {
 }
 
 /**
- * Hook to customize tidypics image thumbnail display
+ * Hook to customize tidypics photo summary and include facebook content
  *
  * @param string $hook   Name of hook
  * @param string $type   Entity type
@@ -213,31 +212,45 @@ function facebook_status_hook_handler($hook, $type, $value, $params) {
  * @param array  $params Parameters
  * @return mixed
  */
-function facebook_image_thumbnail_handler($hook, $type, $value, $params) {
-	$image = $params['image'];
-	$user = elgg_get_logged_in_user_entity();
+function facebook_photo_summary_handler($hook, $type, $value, $params) {
+	$image = $params['entity'];
 	if (elgg_instanceof($image, 'object', 'image') 
 		&& ($image->canEdit() || $user->facebook_can_post_to_admin_page)
 		&& !elgg_in_context('ajaxmodule')) 
 	{
-		elgg_load_js('lightbox');
-		$form = elgg_view('forms/facebook/hover_upload', array('image_guid' => $image->guid));
-		
-		// This is junk.. tidypics needs to be re-worked
-		if (!$value) {
-			$url = elgg_get_site_url();
-			
-			$lightbox_url = $url . 'ajax/view/tidypics/image_lightbox?guid=' . $image->guid;
 
-			$value = "<div class='tidypics_album_images tp-publish-flickr'>
-						<a rel='tidypics-lightbox' class='tidypics-lightbox' href='{$lightbox_url}'><img id='{$image->guid}' src='{$url}photos/thumbnail/{$image->guid}/small/' alt='{$image->title}' /></a>
-					</div>";
-		}
-		
-		return $value . $form;
-	} else {
-		return FALSE;
+		$form = elgg_view('forms/facebook/hover_upload', array('image_guid' => $image->guid));
+
+		$value['class'] .= ' tp-post-facebook';
+		$value['footer'] .= $form;
 	}
+
+	return $value;
+}
+
+/**
+ * Hook to customize tidypics album summary and include facebook content
+ *
+ * @param string $hook   Name of hook
+ * @param string $type   Entity type
+ * @param mixed  $value  Return value
+ * @param array  $params Parameters
+ * @return mixed
+ */
+function facebook_album_summary_handler($hook, $type, $value, $params) {
+	$album = $params['entity'];
+	if (elgg_instanceof($album, 'object', 'album') 
+		&& ($album->canEdit() || $user->facebook_can_post_to_admin_page)
+		&& !elgg_in_context('ajaxmodule')) 
+	{
+
+		$form = elgg_view('forms/facebook/hover_upload_album', array('album_guid' => $album->guid)); 
+
+		$value['class'] .= ' tp-post-facebook';
+		$value['footer'] .= $form;
+	}
+
+	return $value;
 }
 
 /**
@@ -288,6 +301,31 @@ function facebook_setup_entity_menu($hook, $type, $return, $params) {
 				'priority' => 200,
 			);
 			$return[] = ElggMenuItem::factory($options);
+	}
+
+
+	// Post photo to facebook link
+	if (elgg_instanceof($entity, 'object', 'image') && ($entity->canEdit() || $user->facebook_can_post_to_admin_page)) {
+		$text = elgg_echo('facebook:label:postphoto');
+
+		$form = elgg_view('forms/facebook/uploadphoto', array('image_guid' => $entity->guid));
+
+		$text .= "<div style='display: none;'>
+			<div id='facebook-photo-post-{$entity->guid}' class='facebook-post-container'>
+				$form
+			</div>
+		</div>";
+
+		$options = array(
+			'name' => 'post_photo_to_facebook',
+			'text' => $text,
+			'section' => 'actions',
+			'priority' => 901,
+			'link_class' => 'facebook-photo-lightbox',
+			'href' => '#facebook-photo-post-' . $entity->guid,
+		);
+
+		$return[] = ElggMenuItem::factory($options);
 	}
 	
 	// @TODO should probable be a plugin hook
