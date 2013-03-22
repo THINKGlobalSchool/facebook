@@ -77,6 +77,9 @@ function facebook_init() {
 	
 	// Hook into facebook open graph image for tidypics
 	elgg_register_plugin_hook_handler('opengraph:image', 'facebook', 'tidypics_opengraph_image_handler');
+
+	// Hook into facebook open graph image for simplekaltura videos
+	elgg_register_plugin_hook_handler('opengraph:image', 'facebook', 'simplekaltura_opengraph_image_handler');
 	
 	// Facebook footer
 	elgg_extend_view('page/elements/footer', 'facebook/footer');
@@ -427,6 +430,24 @@ function tidypics_opengraph_image_handler($hook, $type, $return, $params) {
 	return $return;
 }
 
+
+/**
+ * Provide video thumbnail for open graph image
+ *
+ * @param sting  $hook   view
+ * @param string $type   input/tags
+ * @param mixed  $return  Value
+ * @param mixed  $params Params
+ *
+ * @return array
+ */
+function simplekaltura_opengraph_image_handler($hook, $type, $return, $params) {
+	$entity = $params['entity'];
+	if (elgg_instanceof($entity, 'object', 'simplekaltura_video')) {
+		return $entity->getIconURL();
+	}
+	return $return;
+}
 
 /**
  * Hook into the object create handler for wire posts
