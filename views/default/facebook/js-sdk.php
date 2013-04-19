@@ -12,7 +12,7 @@
 
 $appId = elgg_get_plugin_setting('app_id', 'facebook');
 
-$channel_url = elgg_get_site_url() . "mods/facebook/views/default/js/facebook/channel.html";
+$channel_url = elgg_get_site_url() . "mod/facebook/views/default/js/facebook/channel.html";
 
 ?>
 <script>
