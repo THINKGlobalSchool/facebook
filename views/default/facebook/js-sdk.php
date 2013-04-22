@@ -15,8 +15,9 @@ $appId = elgg_get_plugin_setting('app_id', 'facebook');
 $channel_url = elgg_get_site_url() . "mod/facebook/views/default/js/facebook/channel.html";
 
 ?>
-<div id='fb-root'></div>
 <script>
+	$(function() {	
+		$('body').prepend('<div id="fb-root"></div>');
 		window.fbAsyncInit = function() {
 			FB.init({
 				appId      : '<?php echo $appId; ?>', // App ID
@@ -38,4 +39,5 @@ $channel_url = elgg_get_site_url() . "mod/facebook/views/default/js/facebook/cha
 			js.src = "//connect.facebook.net/en_US/all.js";
 			ref.parentNode.insertBefore(js, ref);
 		}(document));
+	});
 </script>
