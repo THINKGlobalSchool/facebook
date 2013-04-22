@@ -12,6 +12,8 @@
  * PHP SDK Reference: https://developers.facebook.com/docs/reference/php/
  *
  * Latest PHP tag: 3.1.1
+ *
+ * Overrides the page/default shell!
  * 
  */
 
@@ -64,16 +66,16 @@ function facebook_init() {
 		elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_entity_menu');
 	}
 	
-	if (elgg_is_logged_in()) {
-		// JS SDK
-		elgg_extend_view('page/elements/topbar', 'facebook/js-sdk');
-	} else {
-		//elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_public_entity_menu');
-		elgg_register_plugin_hook_handler('view', 'all', 'facebook_full_view_handler');
+	// if (elgg_is_logged_in()) {
+	// 	// JS SDK
+	// 	elgg_extend_view('page/elements/topbar', 'facebook/js-sdk');
+	// } else {
+	// 	//elgg_register_plugin_hook_handler('register', 'menu:entity', 'facebook_setup_public_entity_menu');
+	// 	elgg_register_plugin_hook_handler('view', 'all', 'facebook_full_view_handler');
 
-		elgg_extend_view('page/elements/footer', 'facebook/js-sdk');
-		$facebook_like = elgg_view('facebook/like');
-	}
+	// 	elgg_extend_view('page/elements/footer', 'facebook/js-sdk');
+	// 	$facebook_like = elgg_view('facebook/like');
+	// }
 	
 	// Hook into facebook open graph image for tidypics
 	elgg_register_plugin_hook_handler('opengraph:image', 'facebook', 'tidypics_opengraph_image_handler');
