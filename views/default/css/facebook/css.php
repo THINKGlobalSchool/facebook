@@ -126,6 +126,11 @@ span.facebook-message {
 	margin-top: 6px;
 }
 
+/* Wire input */
+.facebook-wire-input {
+	margin-top: 8px;
+}
+
 /* Login Page */
 div.facebook-login-or {
 	font-weight: bold;
