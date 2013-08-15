@@ -52,5 +52,5 @@ JAVASCRIPT;
 		));
 	}
 
-	echo $wire_input;
+	echo "<div class='facebook-wire-input'>{$wire_input}</div>";
 }

@@ -85,7 +85,7 @@ function facebook_init() {
 	elgg_extend_view('page/elements/footer', 'facebook/footer');
 	
 	// Wire extender
-	elgg_extend_view('forms/thewire/add', 'facebook/wirepost');
+	elgg_extend_view('forms/thewire/extend', 'facebook/wirepost');
 
 	// Facebook page handler
 	elgg_register_page_handler('facebook', 'facebook_page_handler');
