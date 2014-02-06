@@ -83,6 +83,7 @@ function facebook_get_bare_client() {
 	$facebook = new Facebook(array(
 	  'appId'  => $appId,
 	  'secret' => $secret,
+	  'cookie' => true
 	));
 	
 	return $facebook;
@@ -426,6 +427,7 @@ function facebook_login() {
 	$facebook = NULL;
 	$facebook = facebook_get_bare_client();
 
+	$facebook->getLoginUrl();
 	$fb_user_id = $facebook->getUser();
 
 	/* attempt to find user */
