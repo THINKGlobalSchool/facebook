@@ -24,7 +24,8 @@ $channel_url = elgg_get_site_url() . "mod/facebook/views/default/js/facebook/cha
 				channelUrl : '<?php echo $channel_url; ?>', // Channel File
 				status     : true, // check login status
 				cookie     : true, // enable cookies to allow the server to access the session
-				xfbml      : true  // parse XFBML
+				xfbml      : true  // parse XFBML,
+				oauth      : true
 				});
 
 				elgg.trigger_hook('ready', 'facebook');	
