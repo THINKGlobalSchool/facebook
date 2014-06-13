@@ -5,13 +5,13 @@
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
  * @author Jeff Tilson
- * @copyright THINK Global School 2010 - 2012
+ * @copyright THINK Global School 2010 - 2014
  * @link http://www.thinkglobalschool.com/
  * 
  * Includes the PHP Facebook SDK from: https://github.com/facebook/facebook-php-sdk
  * PHP SDK Reference: https://developers.facebook.com/docs/reference/php/
  *
- * Latest PHP tag: 3.1.1
+ * Latest PHP tag: 3.2.3
  * 
  */
 
@@ -28,26 +28,18 @@ function facebook_init() {
 	
 	// Register facebook JS
 	$fb_js = elgg_get_simplecache_url('js', 'facebook/facebook');
-	elgg_register_simplecache_view('js/facebook/facebook');
 	elgg_register_js('elgg.facebook', $fb_js);
 	
 	// Register facebook CSS
-	$fb_css = elgg_get_simplecache_url('css', 'facebook/css');
-	elgg_register_simplecache_view('css/facebook/css');
-	elgg_register_css('elgg.facebook', $fb_css);
-	elgg_load_css('elgg.facebook');
-	
-	// Register CSS for social login
-	$s_css = elgg_get_simplecache_url('css', 'social_login');
-	elgg_register_simplecache_view('css/social_login');
-	elgg_register_css('elgg.social_login', $s_css);
+	elgg_extend_view('css/elgg', 'css/facebook/css');
 
 	// Load lightbox js
 	elgg_load_js('lightbox');
 
 	// Extend login view for facebook login button
-	if (facebook_can_login()) {
+	if (facebook_can_login() && !elgg_is_logged_in()) {
 		elgg_extend_view('forms/login', 'facebook/login');
+		elgg_extend_view('css/elgg', 'css/social_login');
 	}
 
 	// Load fb related js if user is connected

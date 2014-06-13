@@ -19,8 +19,8 @@ require '../src/facebook.php';
 
 // Create our Application instance (replace this with your appId and secret).
 $facebook = new Facebook(array(
-  'appId'  => '191149314281714',
-  'secret' => '73b67bf1c825fa47efae70a46c18906b',
+  'appId'  => '344617158898614',
+  'secret' => '6dc8ac871858b34798bc2488200e503d',
 ));
 
 // Get User ID
@@ -46,6 +46,7 @@ if ($user) {
 if ($user) {
   $logoutUrl = $facebook->getLogoutUrl();
 } else {
+  $statusUrl = $facebook->getLoginStatusUrl();
   $loginUrl = $facebook->getLoginUrl();
 }
 
@@ -76,6 +77,10 @@ $naitik = $facebook->api('/naitik');
     <?php if ($user): ?>
       <a href="<?php echo $logoutUrl; ?>">Logout</a>
     <?php else: ?>
+      <div>
+        Check the login status using OAuth 2.0 handled by the PHP SDK:
+        <a href="<?php echo $statusUrl; ?>">Check the login status</a>
+      </div>
       <div>
         Login using OAuth 2.0 handled by the PHP SDK:
         <a href="<?php echo $loginUrl; ?>">Login with Facebook</a>

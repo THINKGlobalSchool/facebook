@@ -5,7 +5,7 @@
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
  * @author Jeff Tilson
- * @copyright THINK Global School 2010 - 2012
+ * @copyright THINK Global School 2010 - 2014
  * @link http://www.thinkglobalschool.com/
  * 
  */
@@ -34,28 +34,28 @@ elgg.facebook.init = function() {
 	elgg.facebook.initWallLightboxes();
 
 	// Delegate click handler for login button
-	$(document).delegate('.facebook-login-button', 'click', elgg.facebook.loginClick);
+	$(document).on('click', '.facebook-login-button', elgg.facebook.loginClick);
 	
 	// Delegate click handler for facebook photo/album publishing for admin page enabled users
-	$(document).delegate('.facebook-post-admin-page', 'click', elgg.facebook.postAdminIntercept);
+	$(document).on('click', '.facebook-post-admin-page', elgg.facebook.postAdminIntercept);
 	
 	// Delegate click handler for facebook photo publish
-	$(document).delegate('.post-facebook-submit', 'click', elgg.facebook.postPhoto);
+	$(document).on('click', '.post-facebook-submit', elgg.facebook.postPhoto);
 	
 	// Delegate click handler for facebook photo publish
-	$(document).delegate('.post-album-facebook-submit', 'click', elgg.facebook.postAlbum);
+	$(document).on('click', '.post-album-facebook-submit', elgg.facebook.postAlbum);
 	
 	// Click handler for 'share on facebook' link
-	$(document).delegate('.facebook-share', 'click', elgg.facebook.shareItem);
+	$(document).on('click', '.facebook-share', elgg.facebook.shareItem);
 	
 	// Click handler for share cancel button
-	$(document).delegate('.facebook-cancel-share', 'click', function(event) {
+	$(document).on('click', '.facebook-cancel-share', function(event) {
 		$.fancybox.close();
 		event.preventDefault();
 	});
 	
 	// Click handler for share cancel button
-	$(document).delegate('.facebook-update-share', 'click', elgg.facebook.updateShareItem);
+	$(document).on('.facebook-update-share', 'click', elgg.facebook.updateShareItem);
 }
 
 // FB Init 
