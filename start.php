@@ -5,8 +5,8 @@
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
  * @author Jeff Tilson
- * @copyright THINK Global School 2010 - 2014
- * @link http://www.thinkglobalschool.com/
+ * @copyright THINK Global School 2010 - 2015
+ * @link http://www.thinkglobalschool.org/
  * 
  * Includes the PHP Facebook SDK from: https://github.com/facebook/facebook-php-sdk
  * PHP SDK Reference: https://developers.facebook.com/docs/reference/php/
@@ -17,15 +17,13 @@
 
 elgg_register_event_handler('init','system','facebook_init');
 
+// Register/Load helper library
+elgg_register_library('elgg:facebook_helper', elgg_get_plugins_path() . 'facebook/lib/facebook_helper.php');
+elgg_load_library('elgg:facebook_helper');
+
 // Init function
 function facebook_init() {
-	// Register/Load helper library
-	elgg_register_library('elgg:facebook_helper', elgg_get_plugins_path() . 'facebook/lib/facebook_helper.php');
-	elgg_load_library('elgg:facebook_helper');
-	
-	// Register facebook SDK
-	elgg_register_library('elgg:facebook_sdk', elgg_get_plugins_path() . 'facebook/vendors/facebook-php-sdk/src/facebook.php');
-	
+
 	// Register facebook JS
 	$fb_js = elgg_get_simplecache_url('js', 'facebook/facebook');
 	elgg_register_js('elgg.facebook', $fb_js);
@@ -93,9 +91,7 @@ function facebook_init() {
 	
 	// Actions
 	$action_base = elgg_get_plugins_path() . 'facebook/actions/facebook';
-	elgg_register_action("facebook/connect", "$action_base/connect.php");
 	elgg_register_action("facebook/disconnect", "$action_base/disconnect.php");
-	elgg_register_action("facebook/return", "$action_base/return.php");
 	elgg_register_action("facebook/usersettings", "$action_base/usersettings.php");
 	elgg_register_action("facebook/set_token", "$action_base/set_token.php");
 	elgg_register_action("facebook/uploadphoto", "$action_base/uploadphoto.php");
@@ -140,11 +136,11 @@ function facebook_page_handler($page) {
 		}
 	} else {
 		switch ($page[0]) {
-			case 'test':
-				$params = facebook_test();
-				break;
 			case 'login':
-				facebook_login();
+				if ($page[1] == 'connect') {
+					$skip_login = TRUE;
+				}
+				facebook_login($skip_login);
 				break;
 			case 'settings':
 			default:
@@ -209,6 +205,8 @@ function facebook_status_hook_handler($hook, $type, $value, $params) {
  */
 function facebook_photo_summary_handler($hook, $type, $value, $params) {
 	$image = $params['entity'];
+	$user = elgg_get_logged_in_user_entity();
+
 	if (elgg_instanceof($image, 'object', 'image') 
 		&& ($image->canEdit() || $user->facebook_can_post_to_admin_page)
 		&& !elgg_in_context('ajaxmodule')) 
@@ -234,6 +232,7 @@ function facebook_photo_summary_handler($hook, $type, $value, $params) {
  */
 function facebook_album_summary_handler($hook, $type, $value, $params) {
 	$album = $params['entity'];
+	$user = elgg_get_logged_in_user_entity();
 	if (elgg_instanceof($album, 'object', 'album') 
 		&& ($album->canEdit() || $user->facebook_can_post_to_admin_page)
 		&& !elgg_in_context('ajaxmodule')) 

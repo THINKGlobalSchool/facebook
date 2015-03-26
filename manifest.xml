@@ -3,18 +3,18 @@
 	<name>Facebook Integration</name>
 	<id>facebook</id>
 	<author>Jeff Tilson</author>
-	<version>1.9</version>
+	<version>1.10</version>
 	<category>tgs</category>
 	<category>enhancement</category>
 	<category>api</category>
 	<blurb>General Facebook Integration</blurb>
 	<description>General Facebook Integration</description>
 	<website>http://www.thinkglobalschool.org</website>
-	<copyright>THINK Global School 2010 - 2014</copyright>
+	<copyright>THINK Global School 2010 - 2015</copyright>
 	<license>GNU Public License version 2</license>
 	<requires>
 		<type>elgg_release</type>
-		<version>1.8</version>
+		<version>1.10</version>
 	</requires>
 	<requires>
 		<type>plugin</type>

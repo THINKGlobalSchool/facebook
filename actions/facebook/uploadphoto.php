@@ -5,10 +5,14 @@
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
  * @author Jeff Tilson
- * @copyright THINK Global School 2010 - 2012
- * @link http://www.thinkglobalschool.com/
+ * @copyright THINK Global School 2010 - 2015
+ * @link http://www.thinkglobalschool.org/
  * 
  */
+
+use Facebook\FacebookSession;
+use Facebook\FacebookRequest;
+
 
 $photo_guid = get_input('photo_guid');
 $post_page = get_input('post_page');
@@ -21,15 +25,15 @@ if (!elgg_instanceof($photo, 'object', 'image')) {
 	forward(REFERER);
 }
 
-// Get a facebook client
-try {
-	$facebook = facebook_get_client();
-} catch (FacebookApiException $e) {
+$user = elgg_get_logged_in_user_entity();
+
+$session = facebook_get_session_from_user($user);
+$fb_user = facebook_get_graph_user_from_session($session);
+
+if (!$session || !$user) {
 	register_error(elgg_echo('facebook:error:accounterror'));
 	forward(REFERER);
 }
-
-$facebook->setFileUploadSupport(true);
 
 $message = facebook_decode_text($photo->description);
 
@@ -60,9 +64,9 @@ if ($post_page) {
 	}
 
 	// Set page access token
-	$args['access_token'] = $page['access_token'];
+	$args['access_token'] = $page->getAccessToken();
 	
-	$location = $page['id'];
+	$location = $page->getId();
 } else {
 	// Just posting to our wall
 	$location = 'me';
@@ -70,7 +74,8 @@ if ($post_page) {
 
 try {
 	// Post it!
-	$data = $facebook->api("/{$location}/photos", 'post', $args);
+	$request = new FacebookRequest($session, 'POST', "/{$location}/photos", $args);
+	$request->execute();
 	system_message(elgg_echo('facebook:success:photoupload'));
 	
 	if ($post_page) {

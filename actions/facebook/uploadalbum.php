@@ -13,6 +13,9 @@
 // Could take a while
 set_time_limit(0);
 
+use Facebook\FacebookSession;
+use Facebook\FacebookRequest;
+
 $album_guid = get_input('album_guid');
 $post_page = get_input('post_page');
 
@@ -24,16 +27,15 @@ if (!elgg_instanceof($album, 'object', 'album')) {
 	forward(REFERER);
 }
 
-// Get a facebook client
-try {
-	$facebook = facebook_get_client();
-} catch (FacebookApiException $e) {
+$user = elgg_get_logged_in_user_entity();
+
+$session = facebook_get_session_from_user($user);
+$fb_user = facebook_get_graph_user_from_session($session);
+
+if (!$session || !$user) {
 	register_error(elgg_echo('facebook:error:accounterror'));
 	forward(REFERER);
 }
-
-// Set file upload support
-$facebook->setFileUploadSupport(true);
 
 // Facebook album details
 $params = array(
@@ -58,10 +60,10 @@ if ($post_page) {
 	}
 
 	// Set page access token
-	$params['access_token'] = $page['access_token'];
+	$params['access_token'] = $page->getAccessToken();
 	$batch_params['access_token'] = $params['access_token'];
 	
-	$post_location = $page['id'];
+	$post_location = $page->getId();
 } else {
 	// Just posting to our wall
 	$post_location = 'me';
@@ -69,14 +71,15 @@ if ($post_page) {
 
 // Create the album
 try {
-	$create_album = $facebook->api("/{$post_location}/albums", 'post', $params);	
-} catch (FacebookApiException $e) {
+	$request = new FacebookRequest($session, 'POST', "/{$post_location}/albums", $params);
+	$result = $request->execute()->getGraphObject()->asArray();	
+} catch (Exception $e) {
 	register_error($e->getMessage());
 	forward(REFERER);
 }
-  
+
 //Get album ID of the album you've just created
-$album_uid = $create_album['id'];
+$album_uid = $result['id'];
 
 // Get photo count
 $options = array(
@@ -99,9 +102,9 @@ if ($photo_count <= 10) { // Batch limit
 	// Get photos in a batch
 	$photos = new ElggBatch('elgg_get_entities', $options);
 
-	$result = facebook_batch_upload_photos($facebook, $photos, $album_url, $batch_params);
-	
-	if (!$result['error']) {
+	$result = facebook_batch_upload_photos($session, $photos, $album_url, $batch_params);
+
+	if (!is_array($result)) {
 		if ($post_page) {
 			$album->posted_to_facebook_page = TRUE;
 		}
@@ -122,7 +125,7 @@ if ($photo_count <= 10) { // Batch limit
 		$options['offset'] = $options['limit'] * $i;
 		$photos = new ElggBatch('elgg_get_entities', $options);
 		
-		$result = facebook_batch_upload_photos($facebook, $photos, $album_url, $batch_params);
+		$result = facebook_batch_upload_photos($session, $photos, $album_url, $batch_params);
 		
 		if ($result['error']) {
 			$errors[] = $result['error'];

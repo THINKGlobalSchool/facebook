@@ -1,124 +1,88 @@
-### New SDK Released
+Facebook SDK for PHP
+====================
 
-We've released version 4 of the Facebook SDK for PHP here: [https://github.com/facebook/facebook-php-sdk-v4](https://github.com/facebook/facebook-php-sdk-v4)
-Please use the new repository for new projects and contributions.
-See the [Facebook Developers](https://developers.facebook.com/docs/php/) site
- for documentation.
+[![Latest Stable Version](http://img.shields.io/badge/Latest%20Stable-4.0.20-blue.svg)](https://packagist.org/packages/facebook/php-sdk-v4)
 
------
 
-Facebook PHP SDK (v.3.2.3)
-
-The [Facebook Platform](http://developers.facebook.com/) is
-a set of APIs that make your app more social.
-
-This repository contains the open source PHP SDK that allows you to
-access Facebook Platform from your PHP app. Except as otherwise noted,
-the Facebook PHP SDK is licensed under the Apache Licence, Version 2.0
-(http://www.apache.org/licenses/LICENSE-2.0.html).
+This repository contains the open source PHP SDK that allows you to access Facebook
+Platform from your PHP app.
 
 
 Usage
 -----
 
-The [examples][examples] are a good place to start. The minimal you'll need to
-have is:
-```php
-require 'facebook-php-sdk/src/facebook.php';
+This version of the Facebook SDK for PHP requires PHP 5.4 or greater.
 
-$facebook = new Facebook(array(
-  'appId'  => 'YOUR_APP_ID',
-  'secret' => 'YOUR_APP_SECRET',
-));
-
-// Get User ID
-$user = $facebook->getUser();
-```
-
-To make [API][API] calls:
-```php
-if ($user) {
-  try {
-    // Proceed knowing you have a logged in user who's authenticated.
-    $user_profile = $facebook->api('/me');
-  } catch (FacebookApiException $e) {
-    error_log($e);
-    $user = null;
-  }
-}
-```
-
-You can make api calls by choosing the `HTTP method` and setting optional `parameters`:
-```php
-$facebook->api('/me/feed/', 'post', array(
-	'message' => 'I want to display this message on my wall'
-));
-```
-
-
-Login or logout url will be needed depending on current user state.
-```php
-if ($user) {
-  $logoutUrl = $facebook->getLogoutUrl();
-} else {
-  $loginUrl = $facebook->getLoginUrl();
-}
-```
-
-With Composer:
-
-- Add the `"facebook/php-sdk": "@stable"` into the `require` section of your `composer.json`.
-- Run `composer install`.
-- The example will look like
+Minimal example:
 
 ```php
-if (($loader = require_once __DIR__ . '/vendor/autoload.php') == null)  {
-  die('Vendor directory not found, Please run composer install.');
+<?php
+
+// Skip these two lines if you're using Composer
+define('FACEBOOK_SDK_V4_SRC_DIR', '/path/to/facebook-php-sdk-v4/src/Facebook/');
+require __DIR__ . '/path/to/facebook-php-sdk-v4/autoload.php';
+
+use Facebook\FacebookSession;
+use Facebook\FacebookRequest;
+use Facebook\GraphUser;
+use Facebook\FacebookRequestException;
+
+FacebookSession::setDefaultApplication('YOUR_APP_ID','YOUR_APP_SECRET');
+
+// Use one of the helper classes to get a FacebookSession object.
+//   FacebookRedirectLoginHelper
+//   FacebookCanvasLoginHelper
+//   FacebookJavaScriptLoginHelper
+// or create a FacebookSession with a valid access token:
+$session = new FacebookSession('access-token-here');
+
+// Get the GraphUser object for the current user:
+
+try {
+  $me = (new FacebookRequest(
+    $session, 'GET', '/me'
+  ))->execute()->getGraphObject(GraphUser::className());
+  echo $me->getName();
+} catch (FacebookRequestException $e) {
+  // The Graph API returned an error
+} catch (\Exception $e) {
+  // Some other error occurred
 }
 
-$facebook = new Facebook(array(
-  'appId'  => 'YOUR_APP_ID',
-  'secret' => 'YOUR_APP_SECRET',
-));
-
-// Get User ID
-$user = $facebook->getUser();
 ```
 
-[examples]: /examples/example.php
-[API]: http://developers.facebook.com/docs/api
+Complete documentation, installation instructions, and examples are available at:
+[https://developers.facebook.com/docs/php](https://developers.facebook.com/docs/php)
+
 
 Tests
 -----
 
-In order to keep us nimble and allow us to bring you new functionality, without
-compromising on stability, we have ensured full test coverage of the SDK.
-We are including this in the open source repository to assure you of our
-commitment to quality, but also with the hopes that you will contribute back to
-help keep it stable. The easiest way to do so is to file bugs and include a
-test case.
+1) [Composer](https://getcomposer.org/) is a prerequisite for running the tests.
 
-The tests can be executed by using this command from the base directory:
+Install composer globally, then run `composer install` to install required files.
 
-    phpunit --stderr --bootstrap tests/bootstrap.php tests/tests.php
+2) Create a test app on [Facebook Developers](https://developers.facebook.com), then
+create `tests/FacebookTestCredentials.php` from `tests/FacebookTestCredentials.php.dist`
+and edit it to add your credentials.
+
+3) The tests can be executed by running this command from the root directory:
+
+```bash
+./vendor/bin/phpunit
+```
 
 
 Contributing
-===========
+------------
+
 For us to accept contributions you will have to first have signed the
 [Contributor License Agreement](https://developers.facebook.com/opensource/cla).
 
-When commiting, keep all lines to less than 80 characters, and try to
+When committing, keep all lines to less than 80 characters, and try to
 follow the existing style.
 
 Before creating a pull request, squash your commits into a single commit.
 
 Add the comments where needed, and provide ample explanation in the
 commit message.
-
-
-Report Issues/Bugs
-===============
-[Bugs](https://developers.facebook.com/bugs)
-
-[Questions](http://facebook.stackoverflow.com)

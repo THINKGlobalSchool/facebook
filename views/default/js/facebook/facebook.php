@@ -26,7 +26,7 @@ elgg.facebook.init = function() {
 	});
 	
 	// Init special modal facebook lightboxes
-	$(".facebook-upload-lightbox").fancybox({
+	$(".facebook-upload-lightbox").colorbox({
 		'modal': true,
 	});
 	
@@ -50,7 +50,7 @@ elgg.facebook.init = function() {
 	
 	// Click handler for share cancel button
 	$(document).on('click', '.facebook-cancel-share', function(event) {
-		$.fancybox.close();
+		$.colorbox.close();
 		event.preventDefault();
 	});
 	
@@ -109,7 +109,7 @@ elgg.facebook.loginClick = function(event) {
 				success: function(result) {
 					if (result.status != -1) {
 						// Success!
-						$.fancybox.close();
+						$.colorbox.close();
 						location.reload(true);
 					} else {
 						// Error
@@ -172,7 +172,7 @@ elgg.facebook.postPhoto = function(event) {
 			} else {
 				container.removeClass('elgg-ajax-loader');
 				container.html('<center><label>Success!</label></center>');
-				$.fancybox.close();
+				$.colorbox.close();
 			}
 		}
 	});
@@ -227,10 +227,10 @@ elgg.facebook.postAlbum = function(event) {
 			lightbox.find('.elgg-ajax-loader').remove();
 			if (data.status == -1) {
 				lightbox.append('<p class="facebook-album-upload-error">Error: ' + data.system_messages.error + '</p>');
-				lightbox.append("<br /><a href='#' class='elgg-button elgg-button-submit'  onClick='parent.jQuery.fancybox.close();'>Close</a>")
+				lightbox.append("<br /><a href='#' class='elgg-button elgg-button-submit'  onClick='parent.jQuery.colorbox.close();'>Close</a>")
 			} else {
 				lightbox.append('<center><label>Success!</label></center>');
-				$.fancybox.close();
+				$.colorbox.close();
 			}
 		}
 	});
@@ -268,7 +268,7 @@ elgg.facebook.updateShareItem = function(event) {
 				// Error
 			} else {
 				elgg.facebook.share(entity_guid);
-				$.fancybox.close();
+				$.colorbox.close();
 			}
 			$submit.replaceWith($submit_copy);
 		}
@@ -298,7 +298,7 @@ elgg.facebook.share = function(entity_guid) {
 
 // Init facebook wall choice lightboxes
 elgg.facebook.initWallLightboxes = function(onClosed) {
-	$(".facebook-post-admin-page").fancybox({
+	$(".facebook-post-admin-page").colorbox({
 		'onStart' : function(link) {			
 			if ($(link).hasClass('facebook-repost') && !elgg.facebook.repostIntercept()) {
 				return false;
@@ -310,7 +310,7 @@ elgg.facebook.initWallLightboxes = function(onClosed) {
 
 // initialize facbook photos lightboxes
 elgg.facebook.initPhotosLightboxes = function() {
-	$(".facebook-photo-lightbox").fancybox({
+	$(".facebook-photo-lightbox").colorbox({
 		'onClosed' : function() {
 			// Re-bind tidypics fancybox events
 			$.fancybox2.bindEvents();
@@ -324,7 +324,7 @@ elgg.facebook.initPhotosLightboxes = function() {
 	});
 
 	// Init special modal facebook lightboxes
-	$(".facebook-upload-lightbox").fancybox({
+	$(".facebook-upload-lightbox").colorbox({
 		'modal': true,
 	});
 }

@@ -5,12 +5,12 @@
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
  * @author Jeff Tilson
- * @copyright THINK Global School 2010 - 2012
- * @link http://www.thinkglobalschool.com/
+ * @copyright THINK Global School 2010 - 2015
+ * @link http://www.thinkglobalschool.org/
  * 
  */
 
-$english = array(
+return array(
 	// Generic
 	
 	// Admin section titles
@@ -56,7 +56,9 @@ $english = array(
 	'facebook:label:facebooklogin' => 'Or, sign in with..',
 	
 	'facebook:login:success' => 'You have signed in with Facebook.',
-	'facebook:login:error' => 'Unable to sign on with Facebook.',
+	'facebook:login:error' => 'Unable to sign on with Facebook: %s.',
+	'facebook:login:error:nosession' => 'No session',
+	'facebook:login:error:hook' => 'A plugin hook cancelled the login',
 	'facebook:login:new' => "A new {$CONFIG->site->name} account has been created from your Facebook account.",
 	
 	'facebook:usersettings:description' => "Link your {$CONFIG->site->name} account with Facebook.",
@@ -96,7 +98,7 @@ $english = array(
 	'facebook:success:share' => 'Item shared!',
 	'facebook:success:updateaccess' => 'Successfully updated access!',
 	
-	'facebook:error:accesstoken' => 'The access token associated with your connected Facebook account has expired. Please click login below to update your access.',
+	'facebook:error:accesstoken' => 'The access token associated with your connected Facebook account has expired or is invalid. Please click login below to update your access.',
 
 	// River
 
@@ -104,5 +106,3 @@ $english = array(
 
 	// Other content
 );
-
-add_translation('en',$english);

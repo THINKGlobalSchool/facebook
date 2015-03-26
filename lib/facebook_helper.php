@@ -5,21 +5,28 @@
  * @package Facebook Integration
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
  * @author Jeff Tilson
- * @copyright THINK Global School 2010 - 2012
- * @link http://www.thinkglobalschool.com/
+ * @copyright THINK Global School 2010 - 2015
+ * @link http://www.thinkglobalschool.org/
  * 
  */
 
-function facebook_test() {
-	$params = array();
+//define('FACEBOOK_SDK_V4_SRC_DIR',  elgg_get_plugins_path() . 'facebook/vendors/facebook-php-sdk/src/Facebook/');
+require elgg_get_plugins_path() . 'facebook/vendors/facebook-php-sdk/autoload.php';
 
-	elgg_load_library('elgg:facebook_sdk');
-	
-	$params['title'] = elgg_echo('facebook:label:facebooksettings');
-	$params['content'] = $content;
+$appId = elgg_get_plugin_setting('app_id', 'facebook');
+$secret = elgg_get_plugin_setting('app_secret', 'facebook');
 
-	return $params;
-}
+use Facebook\Entities;
+use Facebook\Entities\AccessToken;
+use Facebook\FacebookSession;
+use Facebook\FacebookRedirectLoginHelper;
+use Facebook\FacebookRequest;
+use Facebook\GraphUser;
+use Facebook\GraphUserPage;
+use Facebook\FacebookRequestException;
+
+FacebookSession::setDefaultApplication($appId, $secret);
+
 
 /**
  * Build content for user settings
@@ -45,48 +52,68 @@ function facebook_get_user_settings_content() {
 }
 
 /**
- * Grab a facebook client
+ * Get a Facebook session object from a local user entity
  * 
- * @param ElggUser $user (Optional)
- * @return mixed
+ * @param  ElggUser                       $user
+ * @return Facebook\FacebookSession|FALSE
  */
-function facebook_get_client($user = NULL) {
-	if (!$user) {
-		$user = elgg_get_logged_in_user_entity();
-	}
-
-	$access_token = $user->facebook_access_token;
-
-	if (!$access_token) {
+function facebook_get_session_from_user($user) {
+	if (!$user->facebook_access_token) {
 		return FALSE;
 	}
 
-	$appId = elgg_get_plugin_setting('app_id', 'facebook');
-	$secret = elgg_get_plugin_setting('app_secret', 'facebook');
+	$access_token = new AccessToken($user->facebook_access_token);
+	$session = new FacebookSession($access_token);
 
-	$facebook = facebook_get_bare_client();
-
-	$facebook->setAccessToken($access_token);
-
-	return $facebook;
+	if ($session) {
+		return $session;
+	} else {
+		return FALSE;
+	}
 }
 
 /**
- * Grab a bare facebook client for logins
+ * Get the facebook user entity (GraphUser) from a valid session
+ *
+ * @param Facebook\FacebookSession $session
+ * @return Facebook\GraphUser
+ */   
+function facebook_get_graph_user_from_session($session) {
+	try {
+		$fb_user = (new FacebookRequest(
+			$session, 'GET', '/me'
+		))->execute()->getGraphObject(GraphUser::className());
+	} catch (FacebookRequestException $e) {
+		// The Graph API returned an error
+		register_error($e->getMessage());
+	} catch (Exception $e) {
+		// Some other error occurred
+		register_error($e->getMessage());
+	}
+
+	if ($fb_user) {
+		return $fb_user;
+	} else {
+		return FALSE;
+	}
+}
+
+/**
+ * Disconnect user from facebook app
+ * 
+ * @param ElggUser $user
+ * @return bool
  */
-function facebook_get_bare_client() {
-	elgg_load_library('elgg:facebook_sdk');
-	
-	$appId = elgg_get_plugin_setting('app_id', 'facebook');
-	$secret = elgg_get_plugin_setting('app_secret', 'facebook');
-	
-	$facebook = new Facebook(array(
-	  'appId'  => $appId,
-	  'secret' => $secret,
-	  'cookie' => true
-	));
-	
-	return $facebook;
+function facebook_disconnect_user($user) {
+	$session = facebook_get_session_from_user($user);
+	$fb_user = facebook_get_graph_user_from_session($session);
+
+	if ($fb_user) {
+		$request = new FacebookRequest($session, 'DELETE', '/me/permissions');
+		return $request->execute();
+	} else {
+		return FALSE;
+	}
 }
 
 /**
@@ -118,8 +145,14 @@ function facebook_post_user_status($message, $user = NULL) {
  */
 function facebook_make_post($params = array(), $location = 'me', $user = NULL) {
 	try {
-		$facebook = facebook_get_client($user);
-		$ret_obj = $facebook->api("/{$location}/feed", 'POST', $params);
+		if (!$user) {
+			$user = elgg_get_logged_in_user_entity();
+		}
+		$session = facebook_get_session_from_user($user);
+		$fb_user = facebook_get_graph_user_from_session($session);
+
+		$request = new FacebookRequest($session, 'POST', "/{$location}/feed", $params);
+		$request->execute();
 		return TRUE;
 	} catch (Exception $e) {
 		return array(
@@ -145,9 +178,9 @@ function facebook_make_page_post($params = array(), $user = NULL) {
 	}
 
 	// Set page access token
-	$params['access_token'] = $page['access_token'];
+	$params['access_token'] = $page->getAccessToken();
 
-	$result = facebook_make_post($params, $page['id'], $user);
+	$result = facebook_make_post($params, $page->getId(), $user);
 
 	if ($result['error']) {
 		register_error(elgg_echo('facebook:error:statuspost', array($result['error'])));
@@ -178,56 +211,16 @@ function facebook_check_token($user = NULL) {
 }
 
 /**
- * Helper function to exchange short lived token for a long lived token
- * 
- */
-function facebook_get_extended_token($token, $user = NULL) {
-	if (!elgg_instanceof($user, 'user')) {
-		$user = elgg_get_logged_in_user_entity();
-	}
-
-	// Start building token URL
-	$oauth_token_url = "https://graph.facebook.com/oauth/access_token?";
-
-	// URL Parts
-	$parts = array(
-		'client_id' => elgg_get_plugin_setting('app_id', 'facebook'),
-		'client_secret' => elgg_get_plugin_setting('app_secret', 'facebook'),
-		'grant_type' => 'fb_exchange_token',
-		'fb_exchange_token' => $token,
-	);
-
-	// Combine parts and URL
-	$oauth_token_url .= http_build_query($parts);
-	
-	// Fetch access token
-	$response = curl_get_file_contents($oauth_token_url);
-	
-	// Check for response error (will be a json string in that case)
-	$decoded_response = json_decode($response);
-	if ($decoded_response->error) {
-		$params = array(
-			'error' => $decoded_response->error->message . " ({$decoded_response->error->code})",
-		);
-	} else {
-		$params = NULL;
-		parse_str($response, $params);
-	}
-	
-	return $params;
-}
-
-/**
  * Upload multiple photos to facebook
  * Note: batch requests are limited to 50
  *
- * @param Facebook  $facebook  facebook client
- * @param ElggBatch $photos    an ElggBatch of photos
- * @param string    $location  graph api location for photo upload (Default: /me/photos)
- * @param array     $fb_params extra parameters
+ * @param Facebook\FacebookSession  $session   facebook session
+ * @param ElggBatch                 $photos    an ElggBatch of photos
+ * @param string                    $location  graph api location for photo upload (Default: /me/photos)
+ * @param array                     $fb_params extra parameters
  * @return array
  */
-function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photos", $fb_params = array()) {
+function facebook_batch_upload_photos($session, $photos, $location = "/me/photos", $fb_params = array()) {
 	// Build facebook batch request
 	$fb_batch = array();
 
@@ -269,8 +262,9 @@ function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photo
 	$fb_params['batch'] = '[' . implode(',' ,$fb_batch) . ']';
 
 	try {
-		$result = $facebook->api('/','post', $fb_params);
-	} catch(FacebookApiException $e) {
+		$request = new FacebookRequest($session, 'POST', "/", $fb_params);
+		$result = $request->execute();
+	} catch(Exception $e) {
 		$result = array('error' => $e->getMessage());	
 	}
 	
@@ -285,9 +279,12 @@ function facebook_batch_upload_photos($facebook, $photos, $location = "/me/photo
  */
 function facebook_get_pages($user = NULL) {
 	try {
-		$facebook = facebook_get_client($user);
-		$ret_obj = $facebook->api('/me/accounts', 'GET');
-		return $ret_obj;
+		$session = facebook_get_session_from_user($user);
+		$fb_user = facebook_get_graph_user_from_session($session);
+
+		$request = new FacebookRequest($session, 'GET', "/me/accounts");
+		$result = $request->execute()->getGraphObjectList(GraphUserPage::className());
+		return $result;
 	} catch (Exception $e) {
 		return array(
 			'error' => $e->getMessage(),
@@ -304,20 +301,15 @@ function facebook_get_pages($user = NULL) {
  */
 function facebook_get_admin_page($user = NULL) {
 	$pages = facebook_get_pages($user);
-	if ($pages['error']) {
-		error_log($pages['error']);
-		return FALSE;
-	}
-	
+
 	$admin_page = elgg_get_plugin_setting('admin_page', 'facebook');
 	
-	foreach ($pages['data'] as $page) {
+	foreach ($pages as $idx => $page) {
 		// If this page id matches ours, and we have create access
-		if ($page['id'] == $admin_page && in_array('CREATE_CONTENT', $page['perms'])) {
+		if ($page->getId() == $admin_page && in_array('CREATE_CONTENT', $page->getPermissions()->asArray())) {
 			return $page;
 		}
 	}
-	
 	return FALSE;
 }
 
@@ -400,94 +392,154 @@ function facebook_can_login() {
  * 
  * @return string
  */
-function facebook_get_authorize_url($next='') {
-	global $CONFIG;
-	
-	if (!$next) {
-		// default to login page
-		$next = "{$CONFIG->site->url}facebook/login";
+function facebook_get_authorize_url($redirect_url = NULL) {
+
+	if (!$redirect_url) {
+		$redirect_url = elgg_get_site_url() . 'facebook/login';
 	}
 	
-	$facebook = facebook_get_bare_client();
-	$url = $facebook->getLoginUrl(array(
-		'redirect_uri' => $next,
-		'scope' => facebook_get_scope(),
-	));
-	return $url;
+	$helper = new FacebookRedirectLoginHelper($redirect_url);
+	$login_url = $helper->getLoginUrl(array('scope' => facebook_get_scope()));
+
+	return $login_url;
 }
 
-function facebook_login() {
-	global $CONFIG;
-	
+function facebook_login($skip_login = FALSE) {
+
 	// sanity check
-	if (!facebook_can_login()) {
+	if (!$skip_login && !facebook_can_login()) {
 		forward();
 	}
 
-	$facebook = NULL;
-	$facebook = facebook_get_bare_client();
+	$redirect_url = elgg_get_site_url() . 'facebook/login';
 
-	$facebook->getLoginUrl();
-	$fb_user_id = $facebook->getUser();
+	if ($skip_login) {
+		$redirect_url .= '/connect';
+	}
 
-	/* attempt to find user */
-	$options = array(
-		'type' => 'user',
-		'metadata_name' => 'facebook_account_id',
-		'metadata_value' => $fb_user_id,
-	);
-	
-	$users = elgg_get_entities_from_metadata($options);
+	$helper = new FacebookRedirectLoginHelper($redirect_url);
+	try {
+	  $session = $helper->getSessionFromRedirect();
+	} catch(FacebookRequestException $ex) {
+		// When Facebook returns an error
+		register_error(elgg_echo('facebook:login:error', array($ex->getMessage())));
+		forward();
+		
+	} catch(\Exception $ex) {
+		// When validation fails or other local issues
+		register_error(elgg_echo('facebook:login:error', array($ex->getMessage())));
+		forward();
+	}
 
-	if (!$users) {
-		$data = $facebook->api('/me');
+	// Check for session
+	if ($session) {
 
-		// check new registration allowed
-		if (!$CONFIG->allow_registration) {
-			register_error(elgg_echo('registerdisabled'));
-			forward();
-		}
+		// graph api request for user data
+		$request = new FacebookRequest($session, 'GET', '/me');
+		$response = $request->execute();
 
-		// trigger a hook for plugin authors to intercept
-		if (!trigger_plugin_hook('new_facebook_user', 'facebook', array('facebook' => $facebook, 'account' => $data), TRUE)) {
-			// halt execution
-			register_error(elgg_echo('facebook:login:error'));
-			forward();
-		}
+		// get response as graph user
+		$user = $response->getGraphObject(GraphUser::className());
 
-		// If we've successfully created a facebook user, login!
-		if ($user = facebook_create_user_with_data($facebook, $data)) {
-			system_message(elgg_echo('facebook:login:new'));
-			login($user);
-			forward();
+		if ($skip_login) {
+			$current_user = elgg_get_logged_in_user_entity();
+
+			// Existing user, connecting their account
+			if (!$current_user->facebook_account_id) {
+				// trigger a hook for plugin authors to intercept
+				if (!trigger_plugin_hook('new_facebook_user', 'facebook', array('existing_user' => $current_user,'account' => $user), TRUE)) {
+					// halt execution
+					register_error(elgg_echo('facebook:login:error:hook'));
+					forward();
+				}
+			} else if ($current_user->facebook_account_id != $user->getId()) {
+				register_error(elgg_echo('facebook:error:usermismatch'));
+				forward(elgg_get_site_url() . 'facebook/settings?cfb=0');
+			} 
+
+
+			// Get a long lived access token
+			$access_token = $session->getAccessToken();
+			$ll_access_token = $access_token->extend();
+
+			// Set user metadata and save
+			$current_user->facebook_account_connected = TRUE;		
+			$current_user->facebook_access_token = $ll_access_token;
+			$current_user->facebook_account_id = $user->getId();
+			$current_user->save();
+
+			// Success and fowards
+			system_message(elgg_echo('facebook:success:connectedaccount'));
+			forward(elgg_get_site_url() . 'facebook/settings?cfb=0');
 		} else {
-			forward(REFERER);
+			// try to find local user
+			$options = array(
+				'type' => 'user',
+				'metadata_name' => 'facebook_account_id',
+				'metadata_value' => $user->getId(),
+			);
+
+			$users = elgg_get_entities_from_metadata($options);
+
+			if (!$users) {
+				// check new registration allowed
+				if (!elgg_get_config('allow_registration')) {
+					register_error(elgg_echo('registerdisabled'));
+					forward();
+				}
+
+				// trigger a hook for plugin authors to intercept
+				if (!trigger_plugin_hook('new_facebook_user', 'facebook', array('account' => $user), TRUE)) {
+					// halt execution
+					register_error(elgg_echo('facebook:login:error:hook'));
+					forward();
+				}
+
+				// If we've successfully created a facebook user, login!
+				if ($user = facebook_create_user_from_graph($session, $user)) {
+					system_message(elgg_echo('facebook:login:new'));
+					login($user);
+					forward(elgg_get_site_url());
+				} else {
+					forward(elgg_get_site_url());
+				}
+			} elseif (count($users) == 1) {
+				// Got a user, log them in
+				login($users[0]);
+				system_message(elgg_echo('facebook:login:success'));
+				forward();
+			}
+			
+			// register login error
+			register_error(elgg_echo('facebook:login:error', array(elgg_echo('facebook:login:error:nosession'))));
+			forward();
 		}
-	} elseif (count($users) == 1) {
-		// Got a user, log them in
-		login($users[0]);
-		system_message(elgg_echo('facebook:login:success'));
-		forward();
 	}
-	
-	// register login error
-	register_error(elgg_echo('facebook:login:error'));
-	forward();
 }
 
 /**
  * Create a user with given facebook data
  * 
- * @param array $data Facebook data ('link', 'email', 'name', etc)
+ * @param  Facebook\FacebookSession $session
+ * @param  Facebook\GraphUser       $user
  * @return mixed
  */
-function facebook_create_user_with_data($facebook, $data) {
-	$username = substr(parse_url($data['link'], PHP_URL_PATH), 1) . '_fb';
+function facebook_create_user_from_graph($session, $user) {
+	// Can no longer grab the fb 'username', going to try building it from the email
+	$user_email = $user->getEmail();
+
+	if ($user_email) {
+		$username = substr($user_email, 0, strpos($user_email, '@')) . '_fb';
+	} else {
+		// Fall back on app unique ID :/
+		$username = $user->getId();
+	}
+	
 	$password = generate_random_cleartext_password();
 
 	// Try to create new account
 	try {
-		if (!$user_guid = register_user($username, $password, $data['name'], $data['email'])) {
+		if (!$user_guid = register_user($username, $password, $user->getName(), $user->getEmail())) {
 			register_error(elgg_echo('registerbad'));
 			return FALSE;
 		}
@@ -496,14 +548,18 @@ function facebook_create_user_with_data($facebook, $data) {
 		return FALSE;
 	}
 
-	$user = get_entity($user_guid);
+	$new_user = get_entity($user_guid);
 
-	if (elgg_instanceof($user, 'user')) {
-		$user->facebook_account_connected = TRUE;		
-		$user->facebook_access_token = $facebook->getAccessToken();
-		$user->facebook_account_id = $facebook->getUser();
-		$user->save();
-		return $user;
+	if (elgg_instanceof($new_user, 'user')) {
+		// Get a long lived access token
+		$access_token = $session->getAccessToken();
+		$ll_access_token = $access_token->extend();
+
+		$new_user->facebook_account_connected = TRUE;		
+		$new_user->facebook_access_token = $ll_access_token;
+		$new_user->facebook_account_id = $user->getId();
+		$new_user->save();
+		return $new_user;
 	} else {
 		register_error(elgg_echo('registerbad'));
 		return FALSE;
